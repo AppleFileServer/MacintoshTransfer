@@ -700,3 +700,16 @@ available for tests.
   the bundled software and the limits.
 - **R7:** the version is "1.0" (as the Converter's); the tag `v1.0` only
   after the Plus checks.
+
+**To finalise 1.0 (open, 2026-10-09): a check on the real Plus.** The
+release candidate (`~/MacPlusProjects/releases/MacMusic-Transfer-Utility-1.0/`,
+from 77db85a) is made, but 1.0 isn't final until the owner has checked,
+on the Macintosh Plus under System 6.0.7:
+1. the Stage 4 test image (`~/MacPlusProjects/transfer-work/plus-test-set/out/`):
+   the names (Café, the shortened long name, `Rock- Live.wav`,
+   `clash 2.wav`), and two songs imported into MacMusic and played;
+2. an image built by the release candidate's app (unzipped outside the
+   repository): mounted, one song imported and played.
+Then: the release notes' PLUS-CHECK line replaced by the result, the
+release remade, the tag `v1.0`, `make-release.sh --bundle`, and 5c (R8,
+MacMusic's environment archive).
