@@ -7,8 +7,9 @@ Files" folder, ready to copy to the BlueSCSI's SD card for a Macintosh
 Plus.
 
 **Status: Stage 1** (`Documentation/SPECIFICATION.md` §13, §15.3): the
-image method works and passes every check here; **the test on the real
-Plus is pending** (`Documentation/TESTING.md`). The app comes in Stage 3.
+image method works: checked three ways here, and **the proof image
+mounted on the real Macintosh Plus** with its files (`Documentation/TESTING.md`).
+Stage 2 builds the full engine; the app comes in Stage 3.
 
 | Document | |
 |---|---|

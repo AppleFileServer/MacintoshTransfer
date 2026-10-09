@@ -566,6 +566,9 @@ available for tests.
   itself. machfs agrees on every file's name, type and SHA-256.
 - **The proof image:** `HD60_512 Transfer.hda`, 13 MB (Q6's sizing for
   7.3 MB of WAVs), two songs made by the Converter, verified by the Swift
-  reader, machfs and checksums; the sources unchanged. **Pending: the
-  owner's test on the real Plus** (TESTING.md). Until then the image is
-  structurally checked, not proven.
+  reader, machfs and checksums; the sources unchanged.
+- **The real Plus (2026-10-09):** the owner copied the proof image to
+  the BlueSCSI's card and booted the Plus from ID 0: "disk is there and
+  the WAV files are too. no issues." **Stage 1's acceptance criterion is
+  met: the method works on the target machine.** (Importing from it into
+  MacMusic wasn't reported separately; TESTING.md.)

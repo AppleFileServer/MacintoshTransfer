@@ -45,4 +45,10 @@ Finder on this Mac. Nothing else on the card is affected either way.
 
 - **Stage 1's proof image** (`~/MacPlusProjects/transfer-work/HD60_512
   Transfer.hda`, 13 MB, "Good Luck, Babe!.wav" and "Chill Dreamy Lounge
-  by.wav", made 2026-10-09): pending.
+  by.wav", made 2026-10-09): **passed, 2026-10-09**, on the owner's
+  Macintosh Plus (System 6.0.7, BlueSCSI, booting from ID 0): "disk is
+  there and the WAV files are too. no issues." The disk appeared as
+  Transfer, with WAV Files and both songs (steps 1-5). Importing and
+  playing them in MacMusic (steps 6-7) wasn't reported separately; the
+  same WAVs were imported and played in MacMusic earlier (the Converter's
+  Stage 1, Mini vMac).
