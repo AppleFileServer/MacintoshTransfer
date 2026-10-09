@@ -612,3 +612,30 @@ available for tests.
   the engine without the window, verified three ways, sources unchanged.
   The engine uses Stage 1's method unchanged, so the Plus test then
   stands; the app's own images get their own Plus test in Stage 4.
+
+## 15.6 Stage 3 decisions (2026-10-09, approved by the owner)
+
+- **U1, the window:** Files (drop or Add Files…; a table: File, On the
+  Mac, Format, Length, Size, Status; Remove, Clear All, totals, notes);
+  Disk (SCSI ID, the file name, its warnings, the volume, the size and
+  how it's worked out); Save To; Advanced; Build Transfer Image, the
+  stage and a bar that fills while copying, Cancel; the Result (Show in
+  Finder, Copy Summary, the card reminder, what was checked).
+- **U2:** saved by default to `~/Music/MacMusic Transfer`; remembered.
+- **U3:** an image already there: Keep Both (the default), Replace,
+  Cancel, with the same-ID reminder.
+- **U4:** ID 0 shown as the boot disk's, warned of in orange, and
+  confirmed before building.
+- **U5 (the owner's choice):** a folder adds the .wav files directly in
+  it, not those in folders within; anything left out is noted.
+- **U6:** quitting or closing mid-build asks, then stops hfsutils (the
+  converter's AppDelegate and close guard).
+- **U7:** remembered: the folder, the ID, the template, the window's
+  place; not the list.
+- **U8:** Advanced shows the template and its check, with Choose… and
+  Use Default.
+- **U9:** the window's logic tested in the engine; the window tried by
+  the owner (TESTING.md): "Happy".
+- **The icon (the owner's request):** the Converter Utility's, with a
+  double arrow (⇄) in its red badge (`Resources/Icon/AppIcon.svg`;
+  `tools/make-icon.sh`, from the converter's).

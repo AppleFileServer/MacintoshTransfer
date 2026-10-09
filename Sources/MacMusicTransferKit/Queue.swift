@@ -57,19 +57,36 @@ public struct Queue: Sendable {
 
     public init() {}
 
-    /// Adds files: the same file twice is ignored (V3); folders and missing
-    /// files are noted and skipped. Names are then (re)assigned.
+    /// Adds files: the same file twice is ignored (V3); a folder adds the
+    /// .wav files directly inside it, not from folders within it (U5, the
+    /// owner's choice); missing files are noted. Names are then (re)assigned.
     public mutating func add(_ urls: [URL]) {
         notes = []
+        var expanded: [URL] = []
         for url in urls {
-            let real = url.resolvingSymlinksInPath().standardizedFileURL
             var isFolder: ObjCBool = false
-            guard FileManager.default.fileExists(atPath: real.path, isDirectory: &isFolder) else {
-                notes.append("\"\(url.lastPathComponent)\" couldn't be found.")
-                continue
+            let real = url.resolvingSymlinksInPath().standardizedFileURL
+            if FileManager.default.fileExists(atPath: real.path, isDirectory: &isFolder), isFolder.boolValue {
+                let items = (try? FileManager.default.contentsOfDirectory(
+                    at: real, includingPropertiesForKeys: [.isDirectoryKey], options: [.skipsHiddenFiles])) ?? []
+                let wavs = items.filter { $0.pathExtension.lowercased() == "wav"
+                    && (try? $0.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) != true }
+                    .sorted { $0.lastPathComponent.localizedStandardCompare($1.lastPathComponent) == .orderedAscending }
+                let others = items.count - wavs.count
+                if wavs.isEmpty {
+                    notes.append("\"\(url.lastPathComponent)\" has no WAV files directly inside it.")
+                } else if others > 0 {
+                    notes.append("From \"\(url.lastPathComponent)\": \(wavs.count) WAV file(s) added; \(others) other item(s) (including any folders) left out.")
+                }
+                expanded += wavs
+            } else {
+                expanded.append(url)
             }
-            guard !isFolder.boolValue else {
-                notes.append("\"\(url.lastPathComponent)\" is a folder: add the WAV files in it.")
+        }
+        for url in expanded {
+            let real = url.resolvingSymlinksInPath().standardizedFileURL
+            guard FileManager.default.fileExists(atPath: real.path) else {
+                notes.append("\"\(url.lastPathComponent)\" couldn't be found.")
                 continue
             }
             if files.contains(where: { $0.source == real }) {

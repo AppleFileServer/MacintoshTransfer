@@ -25,4 +25,5 @@
 | `ProcessRunner` | from the converter (with an environment); for other tools |
 | `mtu-build` | the developer's tool: builds and verifies an image |
 | `MacMusicTransferKitTests` | the tests |
-| (Stage 3) `MacMusicTransfer` | the SwiftUI app |
+| `Preferences` | the folder, the ID, the template (U7) |
+| `MacMusicTransfer` (the app) | `AppModel` (state, the build task, the questions), `MainWindowView`, `AppDelegate` and `WindowFinder` (from the converter: asking before quitting mid-build) |

@@ -9,8 +9,10 @@ Plus.
 **Status: Stage 1** (`Documentation/SPECIFICATION.md` §13, §15.3): the
 image method works: checked three ways here, and **the proof image
 mounted on the real Macintosh Plus** with its files (`Documentation/TESTING.md`).
-Stage 2 added the full packaging engine (`mtu-build`); the app comes in
-Stage 3.
+Stage 2 added the full packaging engine (`mtu-build`); Stage 3, the
+app's window.
+
+    tools/build-app.sh && open "build/MacMusic Transfer Utility.app"
 
 | Document | |
 |---|---|

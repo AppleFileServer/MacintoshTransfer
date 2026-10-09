@@ -23,6 +23,12 @@ public struct TransferProgress: Sendable, Equatable {
     public let stage: Stage
     public let detail: String?
     public let fraction: Double?
+
+    public init(stage: Stage, detail: String?, fraction: Double?) {
+        self.stage = stage
+        self.detail = detail
+        self.fraction = fraction
+    }
 }
 
 /// The result (§7; V7): the image, every file's "from → to", and the

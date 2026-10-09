@@ -85,8 +85,11 @@ import Testing
         #expect(q.files.count == 1 && q.notes.first?.contains("already in the list") == true)
         q.add([copy])
         #expect(q.files.count == 2 && q.notes.first?.contains("identical") == true)
+        // The folder holding them: its WAVs are already in the list (U5).
         q.add([f.folder, f.url("nothing.wav")])
-        #expect(q.files.count == 2 && q.notes.count == 2)
+        #expect(q.files.count == 2)
+        #expect(q.notes.filter { $0.contains("already in the list") }.count == 2)
+        #expect(q.notes.contains { $0.contains("couldn't be found") })
         q.remove([one.resolvingSymlinksInPath().standardizedFileURL])
         #expect(q.files.count == 1)
         q.clear()

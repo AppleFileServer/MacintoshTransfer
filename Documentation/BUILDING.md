@@ -19,6 +19,12 @@ To make machfs's venv again:
     python3 -m venv ~/MacPlusProjects/transfer-tools/venv
     ~/MacPlusProjects/transfer-tools/venv/bin/pip install machfs==1.3
 
+## The icon
+
+`Resources/Icon/AppIcon.svg`; `tools/make-icon.sh` remakes
+`Resources/AppIcon.icns` (headless Chrome from the MacMusic manual's
+tools, sips, iconutil), kept in the repository.
+
 ## Commands
 
     tools/test.sh

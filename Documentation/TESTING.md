@@ -14,10 +14,48 @@ is used when it's there.
 | `ImageTests` (7) | an image of three WAVs verified (the map and driver exactly the template's after formatting; block 96 to the end; "Transfer"; only "WAV Files"; exactly the files; sizes, SHA-256, type WAVE, no resource fork); the Swift reader's view (an accented name stored as Mac Roman); **machfs agreeing** on every name, type and SHA-256; the verifier catching a changed byte and a missing file; too small refused before copying; hfsutils' state in the job's own HOME; the sources unchanged |
 
 | `QueueTests` (6) | a MacMusic WAV ready; stereo, 16-bit 44.1 kHz, 44.1 kHz, extensible, truncated, empty and non-WAV files refused, each with its real properties and reason; the naming rules; case-insensitive clashes made unique; refused files taking no name or size; duplicates ignored, identical files noted, folders and missing files noted, remove and clear |
+| `WindowLogicTests` (2) | a folder adding the WAVs directly in it, in name order, noting what's left out, and its subfolders' not at all; an empty folder noted; the preferences saved and loaded, a bad ID reset |
 | `EngineTests` (9 + 3) | twelve files built and verified three ways, the stages in order, copying counted file by file, sources unchanged, nothing else left in the folder; other IDs, 7 refused; an empty queue, a refused file, a missing folder; an existing image refused, kept beside (`… Transfer 2.hda`), replaced, the original untouched; cancelling at each of four stages leaving nothing; a source changed after adding; a bad template; the size explained; renamed files arriving renamed |
 
-Stage 2: 29 tests (including the four cancelling stages), all passing
-(2026-10-09), in about 2 s, four runs alike.
+Stage 3: 31 tests (including the four cancelling stages), all passing
+(2026-10-09), in about 2 s.
+
+## Trying the window (Stage 3)
+
+The window's logic is tested above (`WindowLogicTests`); the window is
+checked by trying it:
+
+    tools/build-app.sh && open "build/MacMusic Transfer Utility.app"
+
+1. **Adding:** drop two or three Converter WAVs on the window (or Add
+   Files…): each row shows its format, length, size and a ✓. Drop a
+   folder: its WAVs come in (not those in folders within), with a note
+   of anything left out. Drop the same file again: "already in the
+   list".
+2. **A wrong file:** add an MP3, or a CD-quality WAV: "Can't be used"
+   (hover for why), a red line under the list, and Build dimmed. Remove
+   it (select, Remove or Delete): Build is back.
+3. **Names:** a WAV with a long name, or "a:b.wav": "On the Mac" shows
+   the new name in orange.
+4. **The disk:** the SCSI ID is 6, the file name `HD60_512 Transfer.hda`;
+   change it to 2: `HD20_512 Transfer.hda`; choose 0: the orange boot-disk
+   warning. The size, with "How is this worked out?".
+5. **Build:** the stages, the bar filling while copying; the result:
+   the name, size, free space, "verified"; Show in Finder; Copy Summary
+   (paste it somewhere: every file and check); "What was checked".
+6. **Again:** Build again: "already in …": Keep Both (`… Transfer 2.hda`
+   and the same-ID warning), then Replace, then Cancel.
+7. **ID 0:** with ID 0, Build asks first.
+8. **Cancel:** with a dozen files, Cancel (or Esc) during Copying:
+   "Cancelled. Nothing was saved."; no hidden `.mtu-…partial` left in the
+   folder (Finder: Cmd-Shift-. shows hidden files).
+9. **Quitting mid-build:** ⌘Q, then the window's close button, during a
+   build: "Stop building the disk and quit?".
+10. **Remembered:** quit and reopen: the ID and the folder as left; the
+    list empty.
+11. **Advanced:** the template "OK: Apple_partition_map, Apple_Driver43,
+    Apple_HFS"; Choose… a non-disk file: "Can't be used", Build dimmed;
+    Use Default.
 
 ## On the real Macintosh Plus: the acceptance test (brief §8)
 
