@@ -639,3 +639,25 @@ available for tests.
 - **The icon (the owner's request):** the Converter Utility's, with a
   double arrow (⇄) in its red badge (`Resources/Icon/AppIcon.svg`;
   `tools/make-icon.sh`, from the converter's).
+
+### 15.7 Stage 4: compatibility and reliability (L1–L4)
+
+- **L1, scale** (`ScaleTests`): 500 short files, and a disk of about
+  100 MB (four 15-minute files) whose allocation blocks are larger than
+  512 bytes. Both built and verified; the HFS reader needed no change
+  (no extents-overflow records arise at these sizes).
+- **L2, failures mid-build** (`FailureTests`): a 4 MB disk image made with
+  `hdiutil` (refused up front for want of space; and, with the check
+  skipped, filling mid-write); a stand-in `hcopy` failing on the third
+  file; a source made unreadable after it was added; the save folder
+  removed mid-build. Each ends with a plain error, no `.hda` and no
+  hidden part-made image left behind, and the sources untouched.
+- **L3, leftovers after a crash** (`Leftovers`): at launch the app removes
+  its own temporary files, recognised by name (`.mtu-*.partial` in the
+  save folder; `mtu-job-*`, `mtu-spawn-*`, `mtu-build-*` in the
+  temporary folder), only when over an hour old. Others' files are never
+  touched.
+- **L4, a Plus test set**: 13 twenty-second tones, made with the engine,
+  with "Café", a name over 31 characters, a name with a colon, and two
+  names differing only by case (from two folders). Built and verified on this Mac; the check on the Plus
+  is still to be done (no compatibility is claimed until it is).

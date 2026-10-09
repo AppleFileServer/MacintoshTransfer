@@ -146,6 +146,9 @@ public struct TransferJob: Sendable {
 /// Builds the image for a job.
 public struct TransferEngine: Sendable {
     let hfsHelpers: URL?
+    /// For the tests only: skip the free-space check, to see a disk filling
+    /// mid-write handled.
+    var checksSpace = true
 
     public init(hfsHelpers: URL? = nil) { self.hfsHelpers = hfsHelpers }
 
@@ -179,7 +182,7 @@ public struct TransferEngine: Sendable {
             throw TransferError.destinationUnavailable(job.folder.path)
         }
         let destination = try job.destination()
-        if let free = (try? job.folder.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]))?
+        if checksSpace, let free = (try? job.folder.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]))?
             .volumeAvailableCapacityForImportantUsage, Int(free) < job.imageBytes + 1_048_576 {
             throw TransferError.insufficientSpace(needed: job.imageBytes, available: Int(free))
         }

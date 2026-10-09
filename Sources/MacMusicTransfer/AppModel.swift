@@ -34,6 +34,12 @@ final class AppModel {
     }
     var templateOK: Bool { (try? PartitionTemplate.load(prefs.template)) != nil }
 
+    init() {
+        // What a crash may have left (L3): ours only, over an hour old.
+        let folders = [prefs.folder, FileManager.default.temporaryDirectory]
+        Task.detached(priority: .utility) { Leftovers.clean(folders) }
+    }
+
     var job: TransferJob {
         TransferJob(queue: queue, folder: prefs.folder, scsiID: prefs.scsiID, template: prefs.template)
     }
