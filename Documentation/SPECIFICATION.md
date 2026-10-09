@@ -572,3 +572,43 @@ available for tests.
   the WAV files are too. no issues." **Stage 1's acceptance criterion is
   met: the method works on the target machine.** (Importing from it into
   MacMusic wasn't reported separately; TESTING.md.)
+
+## 15.4 Stage 2 decisions (2026-10-09, approved by the owner)
+
+- **V1, checking the WAVs:** the converter's copy of MacMusic's `wav.c`
+  rules (`MacMusicWAVValidator`, `WAVFile`, `MacMusicFormat`, each marked
+  with its source of truth); every file's format, rate, channels, bits,
+  length (from its own byte rate) and size read from the file; anything
+  else refused with its reason and a pointer to the Converter.
+- **V2, names on the Mac:** the converter's rules (`MacNames`); clashes
+  judged as HFS does, ignoring case, made unique ("Song 2.wav") in list
+  order; each change shown "from → to".
+- **V3, duplicates:** the same file (after resolving links) ignored, with
+  a note; identical files at different paths both kept, with a note.
+- **V4, the job:** stages Checking, Preparing, Formatting, Copying ("3 of
+  12", a real fraction), Verifying, Finishing; built as a hidden
+  `.mtu-….hda.partial` beside the destination; moved into place only
+  once verified; cancellable at every stage, leaving nothing; sources
+  and finished images never touched.
+- **V5, an image already there:** refuse (the default; the app asks),
+  replace, or keep both ("HD60_512 Transfer 2.hda", with a warning that
+  both use the same ID).
+- **V6, the size:** the estimate and its working shown; the formatted
+  volume's real free space checked before copying; over 2 GB refused.
+- **V7, the summary:** every file "from → to", size and SHA-256, and
+  every check; shown and copyable, never written beside the image.
+- **V8, tests:** as listed in TESTING.md.
+
+## 15.5 Stage 2 findings (2026-10-09)
+
+- **A refused file was given a Mac name** ("Song 2.wav" for an MP3),
+  taking a name a real file might need, and the estimate counted it:
+  refused files now take no name and aren't counted. Found by trying
+  `mtu-build` on a mixed set.
+- **Sources are re-checked** before the build (their size) and after it
+  (their SHA-256), so a file changed after it was added is refused, not
+  packaged.
+- **Stage 2's acceptance criterion is met:** many files packaged through
+  the engine without the window, verified three ways, sources unchanged.
+  The engine uses Stage 1's method unchanged, so the Plus test then
+  stands; the app's own images get their own Plus test in Stage 4.

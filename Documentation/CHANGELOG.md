@@ -2,6 +2,12 @@
 
 ## 0.1.0 (in development)
 
+- Stage 2, the packaging engine: the queue (each WAV read and checked
+  with MacMusic's rules, its Mac name, clashes ignoring case,
+  duplicates), the job (stages, a hidden temporary image, verified
+  before it's moved into place, cancelling, an existing image refused,
+  replaced or kept beside), the summary; `mtu-build` on the engine; 29
+  tests.
 - Stage 1 (the proof; it mounted on the real Plus, 2026-10-09): images made from the
   template with hfsutils formatting the HFS partition in place; names as
   Mac Roman bytes; an independent HFS reader; verification against the

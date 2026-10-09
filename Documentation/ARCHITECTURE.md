@@ -19,6 +19,9 @@
 | `ImageBuilder`, `Layout`, `Sizing` | the image: header, `hformat` in place, the folder, the files; the sizing policy (Q6) |
 | `HFSReader` | an independent, read-only HFS reader (Inside Macintosh: Files) |
 | `ImageVerifier` | the checks: the map and driver against the template, the volume, the folder, each file's size and SHA-256 |
+| `MacMusicWAVValidator`, `WAVFile`, `MacMusicFormat`, `MacMusicText` | the converter's copies of MacMusic's `wav.c` rules (V1) |
+| `Queue`, `QueuedFile`, `MacNames` | the queue: each file read and checked, its Mac name, clashes, duplicates (V1-V3) |
+| `TransferJob`, `TransferEngine` | the job and the engine: stages, the temporary image, verification, the move, an existing image, cancelling (V4-V7) |
 | `ProcessRunner` | from the converter (with an environment); for other tools |
 | `mtu-build` | the developer's tool: builds and verifies an image |
 | `MacMusicTransferKitTests` | the tests |

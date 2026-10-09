@@ -33,6 +33,25 @@ struct Fixtures {
         return out
     }
 
+    /// A WAV of any shape: format tag, channels, rate, bits; `cut` drops
+    /// that many bytes from the end (a truncated file).
+    @discardableResult
+    func anyWAV(_ name: String, format: UInt16 = 1, channels: UInt16 = 1, rate: UInt32 = 22_050,
+                bits: UInt16 = 8, seconds: Double = 1, cut: Int = 0) throws -> URL {
+        let blockAlign = channels * bits / 8
+        let audio = Data(repeating: 128, count: Int(seconds * Double(rate)) * Int(blockAlign))
+        var fmt = Data()
+        fmt.le16(format); fmt.le16(channels); fmt.le32(rate); fmt.le32(rate * UInt32(blockAlign))
+        fmt.le16(blockAlign); fmt.le16(bits)
+        var body = Data("WAVE".utf8)
+        body.append(Data("fmt ".utf8)); body.le32(UInt32(fmt.count)); body.append(fmt)
+        body.append(Data("data".utf8)); body.le32(UInt32(audio.count)); body.append(audio)
+        var file = Data("RIFF".utf8); file.le32(UInt32(body.count)); file.append(body)
+        let out = url(name)
+        try file.prefix(file.count - cut).write(to: out)
+        return out
+    }
+
     func hfsutils() throws -> HFSUtils {
         let home = url("hfs-home")
         try FileManager.default.createDirectory(at: home, withIntermediateDirectories: true)

@@ -23,4 +23,8 @@ To make machfs's venv again:
 
     tools/test.sh
     swift build -c release --product mtu-build        # with SDKROOT set, as above
-    .build/release/mtu-build [--id N] <output folder> <file.wav> ...
+    .build/release/mtu-build [--id N] [--replace] <output folder> <file.wav> ...
+
+It shows each file's check and Mac name, the size and its working, the
+stages, and the summary. An existing image is kept: the new one is named
+`… Transfer 2.hda` (`--replace` replaces it).

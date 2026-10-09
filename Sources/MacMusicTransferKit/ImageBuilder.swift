@@ -56,7 +56,8 @@ public struct ImageBuilder: Sendable {
     /// Writes the image to `output` (which must not exist yet): the
     /// template's 96 blocks sized for the disk, then the HFS partition,
     /// formatted in place by hfsutils, with the folder and the files.
-    public func build(_ files: [ImageFile], imageBytes: Int, to output: URL) async throws {
+    public func build(_ files: [ImageFile], imageBytes: Int, to output: URL,
+                      progress: @escaping @Sendable (TransferProgress) -> Void = { _ in }) async throws {
         guard Sizing.fits(imageBytes) else { throw Problem.tooLarge(imageBytes) }
         let totalBlocks = imageBytes / 512
         FileManager.default.createFile(atPath: output.path, contents: nil)
@@ -65,6 +66,8 @@ public struct ImageBuilder: Sendable {
         try h.truncate(atOffset: UInt64(totalBlocks * 512))          // the rest: zeroes (sparse)
         try h.close()
 
+        try Task.checkCancellation()
+        progress(TransferProgress(stage: .formatting, detail: nil, fraction: nil))
         try await hfsutils.run("hformat", [.option("-l"), .hfsPath(Layout.volumeName), .hostPath(output.path), .option("1")])
         try await hfsutils.run("hmount", [.hostPath(output.path), .option("1")])
         do {
@@ -72,7 +75,10 @@ public struct ImageBuilder: Sendable {
             let needed = try files.reduce(0) { $0 + (try Self.size($1.source)) }
             guard needed <= free else { throw Problem.doesNotFit(needed: needed, free: free) }
             try await hfsutils.run("hmkdir", [.hfsPath(":" + Layout.folderName)])
-            for f in files {
+            for (i, f) in files.enumerated() {
+                try Task.checkCancellation()
+                progress(TransferProgress(stage: .copying, detail: "\(i + 1) of \(files.count): \(f.macName)",
+                                          fraction: Double(i) / Double(max(files.count, 1))))
                 let to = HFSUtils.Argument.hfsPath(":\(Layout.folderName):\(f.macName)")
                 // -r: raw, the data fork only; "--" so no path is read as an option.
                 try await hfsutils.run("hcopy", [.option("-r"), .option("--"), .hostPath(f.source.path), to])

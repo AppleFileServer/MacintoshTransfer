@@ -13,7 +13,11 @@ is used when it's there.
 | `TemplateTests` (4) | the archived template's map (`Apple_partition_map`, `Apple_Driver43`, `Apple_HFS` at 96); sizing changes only the three size fields, the driver untouched; junk, short and driverless templates refused; the sizing policy |
 | `ImageTests` (7) | an image of three WAVs verified (the map and driver exactly the template's after formatting; block 96 to the end; "Transfer"; only "WAV Files"; exactly the files; sizes, SHA-256, type WAVE, no resource fork); the Swift reader's view (an accented name stored as Mac Roman); **machfs agreeing** on every name, type and SHA-256; the verifier catching a changed byte and a missing file; too small refused before copying; hfsutils' state in the job's own HOME; the sources unchanged |
 
-Stage 1: 14 tests, all passing (2026-10-09).
+| `QueueTests` (6) | a MacMusic WAV ready; stereo, 16-bit 44.1 kHz, 44.1 kHz, extensible, truncated, empty and non-WAV files refused, each with its real properties and reason; the naming rules; case-insensitive clashes made unique; refused files taking no name or size; duplicates ignored, identical files noted, folders and missing files noted, remove and clear |
+| `EngineTests` (9 + 3) | twelve files built and verified three ways, the stages in order, copying counted file by file, sources unchanged, nothing else left in the folder; other IDs, 7 refused; an empty queue, a refused file, a missing folder; an existing image refused, kept beside (`… Transfer 2.hda`), replaced, the original untouched; cancelling at each of four stages leaving nothing; a source changed after adding; a bad template; the size explained; renamed files arriving renamed |
+
+Stage 2: 29 tests (including the four cancelling stages), all passing
+(2026-10-09), in about 2 s, four runs alike.
 
 ## On the real Macintosh Plus: the acceptance test (brief §8)
 
