@@ -686,3 +686,17 @@ available for tests.
   nothing behind.
 - The tests' own folders are now removed after each test (2.4 GB of them
   had built up in the temporary folder).
+- **R5 (`tools/make-release.sh`):** as the Converter's. From committed
+  source only (and a clean Retro68 hfsutils), it runs the tests, builds
+  the app, runs the self-test on a copy outside the repository, and
+  writes `~/MacPlusProjects/releases/MacMusic-Transfer-Utility-<version>/`:
+  the zip, the release notes, SHA256SUMS, a git bundle of the source,
+  hfsutils' exact source (`git archive` of Retro68's `hfsutils` at the
+  commit it was built from), and the checks. Tried on a throwaway clone
+  first: all passed, 2.1 MB in all.
+- **R6 (`Documentation/RELEASE-NOTES.md`):** installing, using it step by
+  step, what was checked (only what was seen on the Plus: a PLUS-CHECK
+  line marks what is still to be recorded before 1.0 is tagged), safety,
+  the bundled software and the limits.
+- **R7:** the version is "1.0" (as the Converter's); the tag `v1.0` only
+  after the Plus checks.

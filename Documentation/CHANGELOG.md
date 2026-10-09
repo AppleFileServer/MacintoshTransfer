@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0 (candidate)
+
+- Stage 5: hfsutils and the disk template inside the app, which uses
+  only its own copies; `--self-test`; `tools/make-release.sh` and the
+  release notes. The tests remove their own folders. 40 tests.
+- Stage 4: 500 files and a 100 MB disk built and verified; failures
+  mid-build (a full disk, hfsutils failing, an unreadable file, the save
+  folder removed) leave nothing behind; leftovers from a crash cleared at
+  launch; a test set for the Plus.
+
 ## 0.1.0 (in development)
 
 - Stage 3, the window: files dropped or added (a folder's WAVs, one
