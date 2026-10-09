@@ -547,3 +547,25 @@ available for tests.
   as a temporary file, moved into place only once verified; an existing
   file replaced only when the user agrees. The SD card is never written.
 
+## 15.3 Stage 1 findings (2026-10-09)
+
+- **hfsutils formats the HFS partition in place,** inside the image
+  (`hformat -l Transfer <image> 1`, `hmount <image> 1`): no separate
+  volume to build and join on (MacMusic's method), so no second copy of
+  the disk. The first 96 blocks are left exactly as the template's,
+  sized: checked byte for byte in every test.
+- **hfsutils stores names as the bytes it's given,** and Foundation's
+  Process passes arguments as UTF-8 (decomposed): "Café" was stored as
+  "CafeÃÅ". The engine now starts hfsutils with posix_spawn and each HFS
+  path as exact Mac Roman bytes (`RawSpawn`); names not in Mac Roman are
+  refused. Found by the tests.
+- **`hcopy` accepts "--", `hattrib` doesn't;** hattrib's argument is
+  always an HFS path beginning ":", so it can't be read as an option.
+- **machfs (1.3) doesn't keep the volume's name** in `read()` (it shows
+  "Untitled"); its test reads the name from the Master Directory Block
+  itself. machfs agrees on every file's name, type and SHA-256.
+- **The proof image:** `HD60_512 Transfer.hda`, 13 MB (Q6's sizing for
+  7.3 MB of WAVs), two songs made by the Converter, verified by the Swift
+  reader, machfs and checksums; the sources unchanged. **Pending: the
+  owner's test on the real Plus** (TESTING.md). Until then the image is
+  structurally checked, not proven.

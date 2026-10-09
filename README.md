@@ -6,8 +6,9 @@ the MacMusic Converter Utility) onto a BlueSCSI hard disk image,
 Files" folder, ready to copy to the BlueSCSI's SD card for a Macintosh
 Plus.
 
-**Status: Stage 0** (`Documentation/SPECIFICATION.md` §13, §15): the
-investigation and design. Stage 1 proves the image method.
+**Status: Stage 1** (`Documentation/SPECIFICATION.md` §13, §15.3): the
+image method works and passes every check here; **the test on the real
+Plus is pending** (`Documentation/TESTING.md`). The app comes in Stage 3.
 
 | Document | |
 |---|---|
