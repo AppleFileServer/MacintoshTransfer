@@ -17,7 +17,7 @@ public struct Preferences: Codable, Sendable, Equatable {
 
     public var folder: URL { folderPath.map { URL(fileURLWithPath: $0, isDirectory: true) } ?? Self.defaultFolder }
 
-    public var template: URL { templatePath.map { URL(fileURLWithPath: $0) } ?? PartitionTemplate.archived }
+    public var template: URL { templatePath.map { URL(fileURLWithPath: $0) } ?? PartitionTemplate.standard }
 
     static let key = "MacMusicTransferUtility.preferences"
 

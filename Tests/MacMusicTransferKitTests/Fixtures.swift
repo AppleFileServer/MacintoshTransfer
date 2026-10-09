@@ -1,15 +1,18 @@
 import Foundation
 @testable import MacMusicTransferKit
 
-/// A fresh folder per test, and MacMusic-style WAVs made byte by byte
-/// (mono, 22,050 Hz, unsigned 8-bit), so the tests need no audio tools.
-struct Fixtures {
+/// A fresh folder per test, removed when the test ends, and MacMusic-style
+/// WAVs made byte by byte (mono, 22,050 Hz, unsigned 8-bit), so the tests
+/// need no audio tools.
+final class Fixtures {
     let folder: URL
 
     init() throws {
         folder = FileManager.default.temporaryDirectory.appendingPathComponent("mtu-tests-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
     }
+
+    deinit { try? FileManager.default.removeItem(at: folder) }
 
     func url(_ name: String) -> URL { folder.appendingPathComponent(name) }
 

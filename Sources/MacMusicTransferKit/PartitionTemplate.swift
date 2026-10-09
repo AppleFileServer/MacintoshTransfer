@@ -23,7 +23,11 @@ public struct PartitionTemplate: Sendable, Equatable {
         case hfsPartitionNotAtBlock96(Int)
     }
 
-    /// The default: MacMusic's archived copy (Q3); inside the app from Stage 5.
+    /// The default: the app's own copy (R2), or, run from the repository,
+    /// MacMusic's archived copy (Q3).
+    public static var standard: URL { Bundled.template ?? archived }
+
+    /// MacMusic's archived copy (Q3), outside every repository.
     public static var archived: URL {
         FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent("MacPlusProjects/environment-1.0/bluescsi-template.hda")

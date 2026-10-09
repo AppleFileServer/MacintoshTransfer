@@ -39,14 +39,19 @@ public struct HFSUtils: Sendable {
 
     public static let needed = ["hformat", "hmount", "humount", "hmkdir", "hcopy", "hattrib", "hls", "hvol"]
 
-    /// Finds hfsutils (MTU_HFSUTILS, the app's Contents/Helpers, Retro68's
-    /// build), with `home` as its private HOME.
+    /// Finds hfsutils, with `home` as its private HOME: in the packaged
+    /// app, its own copy only (R3); otherwise MTU_HFSUTILS, `helpers`,
+    /// then Retro68's build.
     public static func locate(home: URL, environment: [String: String] = ProcessInfo.processInfo.environment,
                               helpers: URL? = nil) throws -> HFSUtils {
         var folders: [URL] = []
-        if let named = environment["MTU_HFSUTILS"], !named.isEmpty { folders.append(URL(fileURLWithPath: named)) }
-        if let helpers { folders.append(helpers) }
-        folders.append(developmentFolder)
+        if let own = Bundled.helpers {
+            folders = [helpers ?? own]
+        } else {
+            if let named = environment["MTU_HFSUTILS"], !named.isEmpty { folders.append(URL(fileURLWithPath: named)) }
+            if let helpers { folders.append(helpers) }
+            folders.append(developmentFolder)
+        }
         for f in folders where needed.allSatisfy({ FileManager.default.isExecutableFile(atPath: f.appendingPathComponent($0).path) }) {
             return HFSUtils(folder: f, home: home)
         }

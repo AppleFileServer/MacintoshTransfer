@@ -661,3 +661,28 @@ available for tests.
   with "Café", a name over 31 characters, a name with a colon, and two
   names differing only by case (from two folders). Built and verified on this Mac; the check on the Plus
   is still to be done (no compatibility is claimed until it is).
+
+### 15.8 Stage 5: packaging and v1.0 (R1–R8)
+
+- **R1:** `tools/build-app.sh` copies the 8 hfsutils tools used from
+  Retro68's build into `Contents/Helpers/hfsutils`, each signed ad hoc,
+  with hfsutils' COPYING and COPYRIGHT (GPL) in
+  `Contents/Resources/hfsutils` (the signature allows no plain files
+  among the helpers). These tools are arm64 only, so the app runs on
+  Apple-silicon Macs only.
+- **R2:** the template's 96 blocks go into
+  `Contents/Resources/bluescsi-template.hda`, copied from
+  `~/MacPlusProjects/environment-1.0/` at build time; never in the
+  repository. Releases are for the owner's own use (Apple's driver).
+  A template chosen in Advanced still comes first.
+- **R3 (`Bundled`):** the packaged app uses its own hfsutils and template
+  only; the development copies (Retro68's build, the archived template,
+  `MTU_HFSUTILS`) are used only when run from the repository.
+- **R4 (`SelfTest`):** `MacMusicTransfer --self-test` opens no window,
+  makes three one-second WAVs (one "Café.wav") in a temporary folder,
+  builds an image with the app's own tools and template, has the
+  independent reader check it, removes everything, prints the report and
+  exits 0 if it passed. Passed six times in a row on this Mac, leaving
+  nothing behind.
+- The tests' own folders are now removed after each test (2.4 GB of them
+  had built up in the temporary folder).

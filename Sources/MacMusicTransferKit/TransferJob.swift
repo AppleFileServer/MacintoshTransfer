@@ -106,7 +106,7 @@ public struct TransferJob: Sendable {
     public var template: URL
 
     public init(queue: Queue, folder: URL, scsiID: Int = BlueSCSI.defaultID,
-                existing: ExistingImage = .refuse, template: URL = PartitionTemplate.archived) {
+                existing: ExistingImage = .refuse, template: URL = PartitionTemplate.standard) {
         self.files = queue.files
         self.folder = folder
         self.scsiID = scsiID
@@ -150,7 +150,8 @@ public struct TransferEngine: Sendable {
     /// mid-write handled.
     var checksSpace = true
 
-    public init(hfsHelpers: URL? = nil) { self.hfsHelpers = hfsHelpers }
+    /// `hfsHelpers` nil: the app's own hfsutils when packaged (R3).
+    public init(hfsHelpers: URL? = nil) { self.hfsHelpers = hfsHelpers ?? Bundled.helpers }
 
     public func run(_ job: TransferJob,
                     progress: @escaping @Sendable (TransferProgress) -> Void = { _ in }) async throws -> TransferResult {
