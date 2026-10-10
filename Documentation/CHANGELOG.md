@@ -9,6 +9,8 @@
   and the Status column narrower, so names show in full. Free space read
   correctly on disks that aren't APFS (macOS's "available for important
   use" can be 0 there, as the Backup Utility found).
+- The quit question's button said "Keep Converting" (from the Converter);
+  now "Keep Building".
 
 - Stage 5: hfsutils and the disk template inside the app, which uses
   only its own copies; `--self-test`; `tools/make-release.sh` and the

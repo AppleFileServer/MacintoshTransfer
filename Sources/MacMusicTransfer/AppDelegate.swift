@@ -28,7 +28,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let alert = NSAlert()
         alert.messageText = "Stop building the disk and quit?"
         alert.informativeText = "The disk being built won't be saved. Your files and any finished disk are left as they are."
-        alert.addButton(withTitle: "Keep Converting")
+        alert.addButton(withTitle: "Keep Building")
         alert.addButton(withTitle: "Stop and Quit")
         alert.buttons[1].hasDestructiveAction = true
         guard alert.runModal() == .alertSecondButtonReturn else { return false }
