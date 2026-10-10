@@ -66,7 +66,8 @@ struct MainWindowView: View {
                             .foregroundStyle(f.renamed ? Color.orange : Color.primary)
                             .help(f.renamed ? "Renamed to suit the Mac." : "")
                     }
-                    TableColumn("Format") { f in Text(format(f)).foregroundStyle(.secondary) }
+                    TableColumn("Format") { f in Text(format(f)).foregroundStyle(.secondary).lineLimit(1) }
+                        .width(min: 96, ideal: 128, max: 150)
                     TableColumn("Length") { f in Text(length(f.report.duration)).monospacedDigit() }.width(54)
                     TableColumn("Size") { f in Text(bytes(f.size)).monospacedDigit() }.width(64)
                     TableColumn("Status") { f in
@@ -75,7 +76,7 @@ struct MainWindowView: View {
                         } else {
                             Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
                         }
-                    }.width(110)
+                    }.width(96)
                 }
                 .frame(minHeight: 200)
                 .onDeleteCommand { model.removeSelected() }
@@ -122,7 +123,7 @@ struct MainWindowView: View {
             }
             LabeledContent("Volume", value: "“\(Layout.volumeName)”, its files in the folder “\(Layout.folderName)”")
             LabeledContent("Size") {
-                Text(model.queue.ready.isEmpty ? "—" : "about \(model.job.imageBytes / 1_048_576) MB")
+                Text(model.queue.ready.isEmpty ? "—" : "about \(sizeText(model.job.imageBytes))")
             }
             if !model.queue.ready.isEmpty {
                 DisclosureGroup("How is this worked out?", isExpanded: $showHow) {
@@ -182,7 +183,7 @@ struct MainWindowView: View {
                     Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(r.image.lastPathComponent).font(.headline)
-                        Text("\(r.files.count) file\(r.files.count == 1 ? "" : "s") · \(r.imageBytes / 1_048_576) MB · "
+                        Text("\(r.files.count) file\(r.files.count == 1 ? "" : "s") · \(sizeText(r.imageBytes)) · "
                              + "\(bytes(r.freeBytes)) free on it · verified")
                             .font(.caption).foregroundStyle(.secondary)
                     }
@@ -240,7 +241,10 @@ struct MainWindowView: View {
         let r = f.report
         guard r.formatTag != 0 else { return "not a WAV file" }
         let ch = r.channels == 1 ? "mono" : r.channels == 2 ? "stereo" : "\(r.channels) ch"
-        return "\(r.sampleRate.formatted()) Hz · \(ch) · \(r.bitsPerSample)-bit"
+        // Compact, and still exact: "22.05 kHz mono 8-bit" (the owner's
+        // screenshots: the full form left too little room for the names).
+        let khz = (Double(r.sampleRate) / 1000).formatted(.number.precision(.fractionLength(0...3)))
+        return "\(khz) kHz \(ch) \(r.bitsPerSample)-bit"
     }
 }
 

@@ -713,3 +713,8 @@ on the Macintosh Plus under System 6.0.7:
 Then: the release notes' PLUS-CHECK line replaced by the result, the
 release remade, the tag `v1.0`, `make-release.sh --bundle`, and 5c (R8,
 MacMusic's environment archive).
+
+**Changes after the first candidate (2026-10-10), from the owner's
+screenshots:** sizes shown the Finder's way (decimal megabytes), the
+file list's columns tightened, and free space read correctly on
+non-APFS disks. The 1.0 candidate remade; the Plus check still to do.

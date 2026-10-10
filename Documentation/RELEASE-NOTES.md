@@ -11,8 +11,10 @@ Utility** to Applications. Everything it needs is inside it (hfsutils and
 the disk template). It needs an Apple silicon Mac with macOS 26.
 
 It's signed ad hoc, for its owner's own use; not notarised. If macOS
-won't open it the first time, Control-click it and choose Open. The disk
-template inside it holds Apple's driver, so the app isn't for passing on.
+won't open it the first time, open System Settings, click Privacy &
+Security, and click Open Anyway beside its name (since macOS 15,
+Control-click and Open no longer does it). The disk template inside it
+holds Apple's driver, so the app isn't for passing on.
 
 ## Using it
 

@@ -2,6 +2,14 @@
 
 ## 1.0 (candidate)
 
+- From the owner's screenshots (2026-10-10): sizes shown as the Finder
+  shows them (decimal megabytes: "46.1 MB"), everywhere; the disk's size
+  still worked out in whole binary megabytes, as disk geometry is. The
+  file list's Format column compact ("22.05 kHz mono 8-bit") and capped,
+  and the Status column narrower, so names show in full. Free space read
+  correctly on disks that aren't APFS (macOS's "available for important
+  use" can be 0 there, as the Backup Utility found).
+
 - Stage 5: hfsutils and the disk template inside the app, which uses
   only its own copies; `--self-test`; `tools/make-release.sh` and the
   release notes. The tests remove their own folders. 40 tests.

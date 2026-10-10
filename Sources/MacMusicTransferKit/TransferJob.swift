@@ -50,7 +50,7 @@ public struct TransferResult: Sendable {
 
     /// The summary, as text to copy.
     public var summary: String {
-        var lines = ["\(image.lastPathComponent): SCSI ID \(scsiID), \(imageBytes / 1_048_576) MB, "
+        var lines = ["\(image.lastPathComponent): SCSI ID \(scsiID), \(sizeText(imageBytes)), "
                      + "volume \"\(Layout.volumeName)\", folder \"\(Layout.folderName)\", \(files.count) file(s)."]
         for f in files {
             let from = f.source.lastPathComponent
@@ -83,13 +83,13 @@ public enum TransferError: Error, Equatable, Sendable {
         case .emptyQueue: "Add some WAV files first."
         case .refusedFiles(let names): "These files can't go on the disk: \(names.joined(separator: ", ")). Remove them, or convert them with the MacMusic Converter Utility."
         case .badID(let id): "SCSI ID \(id) can't be used: choose 0 to 6 (7 is the Mac itself)."
-        case .tooLarge(let n): "\(n / 1_048_576) MB of files is too much: a System 6 disk holds at most 2 GB."
+        case .tooLarge(let n): "\(sizeText(n)) of files is too much: a System 6 disk holds at most 2 GB."
         case .destinationUnavailable(let p): "The folder to save in isn't available, or can't be written to: \(p)"
         case .imageExists(let p): "\(URL(fileURLWithPath: p).lastPathComponent) is already in that folder."
         case .sourceChanged(let n): "\"\(n)\" changed or disappeared after it was added. Add it again."
         case .template(let why): "The disk template can't be used: \(why)"
         case .hfsutils(let why): "The disk couldn't be made: \(why)"
-        case .insufficientSpace(let needed, let available): "There isn't room for the disk image: it needs \(needed / 1_048_576) MB, and \(available / 1_048_576) MB is free."
+        case .insufficientSpace(let needed, let available): "There isn't room for the disk image: it needs \(sizeText(needed)), and \(sizeText(available)) is free."
         case .doesNotFit(let needed, let free): "The files (\(needed) bytes) don't fit in the formatted volume (\(free) bytes free)."
         case .verificationFailed(let problems): "The finished disk failed its checks, so it wasn't kept: " + problems.joined(separator: "; ")
         case .cancelled: "Cancelled. Nothing was saved."
@@ -137,9 +137,8 @@ public struct TransferJob: Sendable {
 
     /// How the size was reached (V6), in words.
     public var sizeExplanation: String {
-        let mb = { (b: Int) in String(format: "%.1f MB", Double(b) / 1_048_576) }
-        return "\(mb(totalBytes)) of files, plus 25% for adding more, plus 4 MB for the disk's own structures, "
-            + "rounded up to a whole MB (at least 10 MB): \(imageBytes / 1_048_576) MB."
+        "\(sizeText(totalBytes)) of files, plus a quarter as much again for adding more, plus 4 MiB for "
+            + "the disk's own structures, rounded up to a whole MiB (at least 10 MiB): \(sizeText(imageBytes))."
     }
 }
 
@@ -183,9 +182,16 @@ public struct TransferEngine: Sendable {
             throw TransferError.destinationUnavailable(job.folder.path)
         }
         let destination = try job.destination()
-        if checksSpace, let free = (try? job.folder.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]))?
-            .volumeAvailableCapacityForImportantUsage, Int(free) < job.imageBytes + 1_048_576 {
-            throw TransferError.insufficientSpace(needed: job.imageBytes, available: Int(free))
+        // Free space: the larger of macOS's figure for important use (which
+        // counts purgeable space on APFS) and the plain one: on a disk that
+        // isn't APFS the first can read 0 (as the Backup Utility found).
+        let room = try? job.folder.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey,
+                                                             .volumeAvailableCapacityKey])
+        if checksSpace, room?.volumeAvailableCapacityForImportantUsage != nil || room?.volumeAvailableCapacity != nil {
+            let free = max(Int(room?.volumeAvailableCapacityForImportantUsage ?? 0), room?.volumeAvailableCapacity ?? 0)
+            if free < job.imageBytes + 1_048_576 {
+                throw TransferError.insufficientSpace(needed: job.imageBytes, available: free)
+            }
         }
         try Task.checkCancellation()
 

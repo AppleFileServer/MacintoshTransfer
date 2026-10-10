@@ -117,7 +117,9 @@ import Testing
 
     @Test func sizeExplained() throws {
         let job = TransferJob(queue: try queue(2, seconds: 10), folder: f.folder)
-        #expect(job.sizeExplanation.contains("plus 25%") && job.sizeExplanation.hasSuffix("10 MB."))
+        // The Finder's megabytes (10 MiB is 10.5 MB).
+        #expect(job.sizeExplanation.contains("a quarter as much again") && job.sizeExplanation.hasSuffix("10.5 MB."),
+                "\(job.sizeExplanation)")
     }
 
     /// Names that had to change arrive under their Mac names.
