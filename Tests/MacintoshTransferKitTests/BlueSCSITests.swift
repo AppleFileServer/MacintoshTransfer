@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import MacMusicTransferKit
+@testable import MacintoshTransferKit
 
 @Suite struct BlueSCSITests {
     @Test func names() {

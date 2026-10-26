@@ -1,6 +1,6 @@
 import AppKit
 import Observation
-import MacMusicTransferKit
+import MacintoshTransferKit
 
 /// The window's state, and the running build. Its decisions (the queue,
 /// names, the job, preferences) live in the engine library, where they're

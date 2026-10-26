@@ -2,14 +2,14 @@ import Foundation
 
 /// The packaged app's self-test (Stage 5; R4), as the MacMusic Converter
 /// Utility's: run as
-/// `MacMusic Transfer Utility.app/Contents/MacOS/MacMusicTransfer --self-test`,
+/// `Macintosh Transfer Utility.app/Contents/MacOS/MacintoshTransfer --self-test`,
 /// it opens no window, uses the app's own hfsutils and template only,
 /// makes three short WAVs (one named "Café") in a temporary folder,
 /// builds an image of them, has it checked by the independent HFS
 /// reader, removes everything it made, and reports.
 public enum SelfTest {
     public static func run(helpers: URL?, template: URL?) async -> (passed: Bool, report: [String]) {
-        var report = ["MacMusic Transfer Utility \(AppVersion.string): self-test"]
+        var report = ["Macintosh Transfer Utility \(AppVersion.string): self-test"]
         func fail(_ s: String) -> (Bool, [String]) { report.append("FAIL: " + s); return (false, report) }
         guard let helpers, let template else { return fail("not run from the packaged app") }
 

@@ -1,9 +1,9 @@
-# MacMusic Transfer Utility
+# Macintosh Transfer Utility
 
 ## Project
 
-A native macOS app that packages MacMusic's WAV files into a BlueSCSI
-hard disk image (`HD60_512 Transfer.hda`) for a real Macintosh Plus
+A native macOS app that packages MacMusic's WAV files (and, from 2.0,
+the MacPhoto Utility's pictures) into a BlueSCSI hard disk image (`HD60_512 Transfer.hda`) for a real Macintosh Plus
 (System 6.0.7, through BlueSCSI, booting from ID 0). The requirements:
 `Documentation/SPECIFICATION.md` (the owner's brief, unedited;
 investigation, decisions and findings in §15).
@@ -14,6 +14,9 @@ Related projects (don't change them unless asked):
   the BlueSCSI image method this app uses.
 - `~/MacPlusProjects/MacMusicConverter/`: the MacMusic Converter Utility,
   which makes the WAVs.
+- `~/MacPlusProjects/MacPhotoUtility/`: the MacPhoto Utility, which makes
+  the pictures; its `Documentation/FILE_FORMATS.md` §5 is the contract
+  between the two apps (SPECIFICATION.md §15.9). Never written here.
 
 ## Build and test
 

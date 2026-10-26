@@ -1,9 +1,9 @@
 import SwiftUI
-import MacMusicTransferKit
+import MacintoshTransferKit
 
-/// MacMusic Transfer Utility: one window (Stage 3, U1-U9).
+/// Macintosh Transfer Utility: one window (Stage 3, U1-U9).
 @main
-struct MacMusicTransferApp: App {
+struct MacintoshTransferApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @State private var model = AppModel()
 
@@ -20,7 +20,7 @@ struct MacMusicTransferApp: App {
     }
 
     var body: some Scene {
-        Window("MacMusic Transfer", id: "main") {
+        Window("Macintosh Transfer", id: "main") {
             MainWindowView(model: model)
                 .onAppear { delegate.model = model }
                 .background(WindowFinder { delegate.watch($0) })

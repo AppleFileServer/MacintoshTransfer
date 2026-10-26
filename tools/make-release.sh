@@ -1,11 +1,11 @@
 #!/bin/sh
-# Makes a release of the MacMusic Transfer Utility (Stage 5; R5), from the
+# Makes a release of the Macintosh Transfer Utility (Stage 5; R5), from the
 # committed source, as the MacMusic Converter Utility's does, into
-#   ~/MacPlusProjects/releases/MacMusic-Transfer-Utility-<version>/
+#   ~/MacPlusProjects/releases/Macintosh-Transfer-Utility-<version>/
 # holding:
-#   MacMusic-Transfer-Utility-<version>.zip   the app (unzip, drag to Applications)
+#   Macintosh-Transfer-Utility-<version>.zip  the app (unzip, drag to Applications)
 #   RELEASE-NOTES.md, SHA256SUMS
-#   source/MacMusicTransfer.bundle            the whole repository (git bundle, with tags)
+#   source/MacintoshTransfer.bundle           the whole repository (git bundle, with tags)
 #   source/hfsutils-source.tar.gz             the exact source of the bundled hfsutils (GPL)
 #   checks/tests.txt, checks/self-test.txt    what was checked, and the results
 #   checks/made.txt                           from what, on what
@@ -23,17 +23,17 @@
 
 set -eu
 cd "$(dirname "$0")/.."
-VERSION=$(sed -n 's/.*static let string = "\(.*\)".*/\1/p' Sources/MacMusicTransferKit/Version.swift)
+VERSION=$(sed -n 's/.*static let string = "\(.*\)".*/\1/p' Sources/MacintoshTransferKit/Version.swift)
 RETRO68=${MTU_RETRO68_SOURCE:-$HOME/Retro68}
-OUT=${MTU_RELEASES:-$HOME/MacPlusProjects/releases}/MacMusic-Transfer-Utility-$VERSION
-NAME="MacMusic Transfer Utility"
+OUT=${MTU_RELEASES:-$HOME/MacPlusProjects/releases}/Macintosh-Transfer-Utility-$VERSION
+NAME="Macintosh Transfer Utility"
 
 sums() { (cd "$OUT" && find . -type f ! -name SHA256SUMS | sort | xargs shasum -a 256 > SHA256SUMS); }
 
 if [ "${1:-}" = "--bundle" ]; then
     [ -d "$OUT" ] || { echo "no release at $OUT" >&2; exit 1; }
-    git bundle create "$OUT/source/MacMusicTransfer.bundle" --all 2> /dev/null
-    git bundle verify "$OUT/source/MacMusicTransfer.bundle" > /dev/null 2>&1
+    git bundle create "$OUT/source/MacintoshTransfer.bundle" --all 2> /dev/null
+    git bundle verify "$OUT/source/MacintoshTransfer.bundle" > /dev/null 2>&1
     sums
     echo "refreshed the source bundle: $(git describe --tags --always)"
     exit 0
@@ -57,15 +57,15 @@ echo "== the self-test, on a copy outside the repository"
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 ditto "build/$NAME.app" "$WORK/$NAME.app"
-(cd / && "$WORK/$NAME.app/Contents/MacOS/MacMusicTransfer" --self-test) > "$OUT/checks/self-test.txt" 2>&1 \
+(cd / && "$WORK/$NAME.app/Contents/MacOS/MacintoshTransfer" --self-test) > "$OUT/checks/self-test.txt" 2>&1 \
     || { cat "$OUT/checks/self-test.txt"; echo "the self-test failed" >&2; exit 1; }
 tail -1 "$OUT/checks/self-test.txt"
 
 echo "== packaging"
-ditto -c -k --keepParent "build/$NAME.app" "$OUT/MacMusic-Transfer-Utility-$VERSION.zip"
+ditto -c -k --keepParent "build/$NAME.app" "$OUT/Macintosh-Transfer-Utility-$VERSION.zip"
 cp Documentation/RELEASE-NOTES.md "$OUT/RELEASE-NOTES.md"
-git bundle create "$OUT/source/MacMusicTransfer.bundle" --all 2> /dev/null
-git bundle verify "$OUT/source/MacMusicTransfer.bundle" > /dev/null 2>&1
+git bundle create "$OUT/source/MacintoshTransfer.bundle" --all 2> /dev/null
+git bundle verify "$OUT/source/MacintoshTransfer.bundle" > /dev/null 2>&1
 git -C "$RETRO68" archive --format=tar.gz --prefix=Retro68/ -o "$OUT/source/hfsutils-source.tar.gz" HEAD hfsutils
 RETRO68_COMMIT=$(git -C "$RETRO68" rev-parse --short HEAD)
 {

@@ -24,6 +24,6 @@
 | `TransferJob`, `TransferEngine` | the job and the engine: stages, the temporary image, verification, the move, an existing image, cancelling (V4-V7) |
 | `ProcessRunner` | from the converter (with an environment); for other tools |
 | `mtu-build` | the developer's tool: builds and verifies an image |
-| `MacMusicTransferKitTests` | the tests |
-| `Preferences` | the folder, the ID, the template (U7) |
-| `MacMusicTransfer` (the app) | `AppModel` (state, the build task, the questions), `MainWindowView`, `AppDelegate` and `WindowFinder` (from the converter: asking before quitting mid-build) |
+| `MacintoshTransferKitTests` | the tests |
+| `Preferences` | the folder, the ID, the template (U7); 1.0's settings carried over, the default folder (M4, M5) |
+| `MacintoshTransfer` (the app) | `AppModel` (state, the build task, the questions), `MainWindowView`, `AppDelegate` and `WindowFinder` (from the converter: asking before quitting mid-build) |

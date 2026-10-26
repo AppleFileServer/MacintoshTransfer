@@ -1,5 +1,5 @@
 import Foundation
-import MacMusicTransferKit
+import MacintoshTransferKit
 
 // mtu-build: builds a Transfer image from WAV files with the engine (a
 // developer's tool until the app does it). Names are made to suit the Mac;

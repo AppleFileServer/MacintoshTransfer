@@ -724,3 +724,86 @@ Plus: "names fine, songs imported and played" (TESTING.md). 1.0 is
 final: the release notes' PLUS-CHECK line replaced, the release remade,
 tagged `v1.0`. 5c (R8, MacMusic's environment archive) is left to a
 MacMusic session (the owner, 2026-10-26).
+
+## 15.9 Macintosh Transfer Utility 2.0: decisions (2026-10-26, approved by the owner)
+
+The owner decided (2026-10-26, with the MacPhoto Utility session) that
+the app becomes the **Macintosh Transfer Utility**: the same app, also
+putting the MacPhoto Utility's pictures on the transfer image. For this
+app that reverses Q11/P17 ("MacMusic-specific"); the programme's record
+is P25 (`~/MacPlusProjects/Programme/DECISIONS.md`).
+
+- **M1, the baseline:** 1.0 finished first as the MacMusic Transfer
+  Utility (§15.8): checked on the Plus, tagged `v1.0` (0759ea0).
+- **M2, names:** the app "Macintosh Transfer Utility", its window
+  "Macintosh Transfer"; the package and modules `MacintoshTransfer`,
+  `MacintoshTransferKit`; the developer's tool stays `mtu-build`; the
+  release folder `Macintosh-Transfer-Utility-<version>`. The volume
+  ("Transfer") and the image's name (`HDx0_512 Transfer.hda`) don't
+  change. The temporary files keep their `mtu-` names, so 1.0's
+  leftovers are still cleared.
+- **M3, the bundle identifier:** kept, `local.macmusic.transferutility`
+  (as the Macintosh Backup Utility keeps `local.macmusic.backuputility`):
+  the settings stay in the same domain, and macOS's folder permissions
+  carry over.
+- **M4, the preferences:** the key becomes
+  `MacintoshTransferUtility.preferences`; the first time, 1.0's key is
+  copied to it, and left for 1.0.
+- **M5, the save folder:** `~/Documents/Macintosh Transfer` by default;
+  but 1.0's `~/Music/MacMusic Transfer` if it exists, so nothing moves.
+- **M6, the SCSI ID:** stays 6 by default (the owner's choice). The
+  owner's card also has `HD60_512 Projects.hda` at ID 6; the window's
+  one-image-per-ID reminder stands.
+- **M7, the version:** 2.0.
+- **M8, the repository folder:** `~/MacPlusProjects/MacintoshTransfer`,
+  renamed after T1 is committed, at a step boundary.
+- **M9, kinds of file:** each kind has its folder, type, creator, Mac
+  name rule, validator, window columns and size. A file is recognised
+  by its content; its extension is only a hint. A file of no known kind
+  is refused with its reason. The queue may mix kinds; names clash only
+  within a folder. The verifier checks each kind's folder, type and
+  creator, and that the root holds only the folders used.
+- **M10, a regression test:** a WAV-only image matches 1.0's layout:
+  the 96 blocks, the volume, only "WAV Files", the names, `WAVE`/`????`,
+  the sizes and SHA-256s (structurally: hformat stamps dates).
+- **M11, folders on the volume,** each only when its kind is present:
+  "WAV Files"; "MacPaint Files"; "PICT Files" (1-bit screen PICTs);
+  "Print Files" (8-bit print PICTs). Both PICTs end `.pict`, so only
+  their content tells them apart.
+- **M12, picture names:** keep the kind's extension (`.MAC`, `.pict`),
+  within 31 characters, as `.wav` is now.
+- **M13, the validators:** written from the contract and the public
+  specifications (MacPaint: Apple Technical Note #86; PICT: Inside
+  Macintosh: Imaging With QuickDraw), not from MacPhoto's code. The
+  contract is the MacPhoto Utility's `Documentation/FILE_FORMATS.md`
+  (draft 0.3, approved by the owner as the working contract,
+  2026-10-26; provisional until its format 1.0):
+  - MacPaint `.MAC`, `PNTG`/`MPNT`: a 512-byte header of zeros (version
+    0); 720 rows of 72 bytes, each row packed alone; padded to a
+    multiple of 512 bytes (a shorter file accepted); the 512 × 342
+    image centred (rows 189-530, bytes 4-67), the rest white (PH12).
+  - Screen PICT `.pict`, `PICT`/`MPho`: version 1, 512 × 342, 1-bit,
+    one PackBitsRect (PH17, PH18).
+  - Print PICT `.pict`, `PICT`/`MPho`: version 2, 8-bit grey, a fixed
+    set of opcodes with MacPhoto's LongComment record and its CRC-32;
+    750 × 1050, 1050 × 750, 900 × 1260 or 1260 × 900 (PH16, PH19).
+
+  Fixtures: our own, and MacPhoto's `Fixtures/handoff/` copied into
+  `Tests/`. The self-test makes one file of each kind. Notes from
+  MacPhoto: macOS's ImageIO draws these PICTs blank, so it is no
+  reference reader; other people's PICTs often carry data in the
+  512-byte header. **Open for T3:** accept only MacPhoto's PICTs, or
+  others' too (then not requiring the zero header)?
+- **M14, Plus checks** before anything is called compatible: a 2.0
+  WAV-only image (mounts; a song imported and played); a mixed image
+  (its folders; MacPaint documents with MacPaint's icon, opening in
+  MacPaint; PICTs and their type and creator; the names).
+- **After Dark** (on the owner's boot disk) shows PICTs from its own
+  Slide Show Folder there. The app writes only its own volume, so it
+  doesn't place them; the release notes say to drag the screen PICTs
+  from "PICT Files" into Slide Show Folder on the Plus (the owner).
+
+**Stages,** in this order (the owner): T1 the rename (M2-M8); T2 kinds
+of file, WAV only (M9-M11); T3 MacPaint and both PICTs (M12-M13); T4
+the combined Plus test (M14) and release 2.0. (The plan's separate
+print-master stage went with `.mppi`, PH16.)

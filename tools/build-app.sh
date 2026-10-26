@@ -1,5 +1,5 @@
 #!/bin/sh
-# Builds "MacMusic Transfer Utility.app" in build/ (Stage 3): the release
+# Builds "Macintosh Transfer Utility.app" in build/ (Stage 3): the release
 # build of the app in a bundle with its Info.plist, signed ad hoc, with
 # (Stage 5; R1, R2) inside it:
 #   Contents/Helpers/hfsutils/   Retro68's hfsutils, the 8 tools used;
@@ -14,13 +14,13 @@ set -eu
 cd "$(dirname "$0")/.."
 SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
 export SDKROOT
-VERSION=$(sed -n 's/.*static let string = "\(.*\)".*/\1/p' Sources/MacMusicTransferKit/Version.swift)
-swift build -c release --product MacMusicTransfer
-BIN=$(swift build -c release --show-bin-path)/MacMusicTransfer
-APP="build/MacMusic Transfer Utility.app"
+VERSION=$(sed -n 's/.*static let string = "\(.*\)".*/\1/p' Sources/MacintoshTransferKit/Version.swift)
+swift build -c release --product MacintoshTransfer
+BIN=$(swift build -c release --show-bin-path)/MacintoshTransfer
+APP="build/Macintosh Transfer Utility.app"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp "$BIN" "$APP/Contents/MacOS/MacMusicTransfer"
+cp "$BIN" "$APP/Contents/MacOS/MacintoshTransfer"
 sed "s/@VERSION@/$VERSION/g" Resources/Info.plist > "$APP/Contents/Info.plist"
 cp Resources/AppIcon.icns "$APP/Contents/Resources/"
 

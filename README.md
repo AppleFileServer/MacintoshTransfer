@@ -1,18 +1,17 @@
-# MacMusic Transfer Utility
+# Macintosh Transfer Utility
 
-A macOS app for the MacMusic project: it puts MacMusic WAV files (made by
-the MacMusic Converter Utility) onto a BlueSCSI hard disk image,
-`HD60_512 Transfer.hda`, holding an HFS volume "Transfer" with a "WAV
-Files" folder, ready to copy to the BlueSCSI's SD card for a Macintosh
-Plus.
+A macOS app for a Macintosh Plus: it puts files onto a BlueSCSI hard
+disk image, `HD60_512 Transfer.hda`, holding an HFS volume "Transfer",
+ready to copy to the BlueSCSI's SD card. Today: MacMusic WAV files (made
+by the MacMusic Converter Utility), in a "WAV Files" folder. Coming in
+2.0: the MacPhoto Utility's pictures (MacPaint documents and PICTs).
 
-**Status: Stage 1** (`Documentation/SPECIFICATION.md` §13, §15.3): the
-image method works: checked three ways here, and **the proof image
-mounted on the real Macintosh Plus** with its files (`Documentation/TESTING.md`).
-Stage 2 added the full packaging engine (`mtu-build`); Stage 3, the
-app's window.
+**Status:** 1.0 released as the **MacMusic Transfer Utility** (tag
+`v1.0`, checked on the real Plus, 2026-10-26). **2.0 in development**
+as the Macintosh Transfer Utility (`Documentation/SPECIFICATION.md`
+§15.9): stage T1, the rename, done; WAVs only so far.
 
-    tools/build-app.sh && open "build/MacMusic Transfer Utility.app"
+    tools/build-app.sh && open "build/Macintosh Transfer Utility.app"
 
 | Document | |
 |---|---|

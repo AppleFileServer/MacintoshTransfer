@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import MacMusicTransferKit
+@testable import MacintoshTransferKit
 
 /// The self-test's own WAVs (R4) are in MacMusic's format; run outside
 /// the packaged app, it refuses rather than using the development tools.

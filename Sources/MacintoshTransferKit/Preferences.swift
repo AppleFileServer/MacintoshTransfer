@@ -10,18 +10,29 @@ public struct Preferences: Codable, Sendable, Equatable {
 
     public init() {}
 
-    /// `~/Music/MacMusic Transfer` (U2), made when first used.
-    public static var defaultFolder: URL {
-        FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Music/MacMusic Transfer", isDirectory: true)
+    /// `~/Documents/Macintosh Transfer` (U2, M5), made when first used; but
+    /// 1.0's `~/Music/MacMusic Transfer` if it's there, so nothing moves.
+    public static var defaultFolder: URL { defaultFolder(home: FileManager.default.homeDirectoryForCurrentUser) }
+
+    static func defaultFolder(home: URL) -> URL {
+        let old = home.appendingPathComponent("Music/MacMusic Transfer", isDirectory: true)
+        var isFolder: ObjCBool = false
+        if FileManager.default.fileExists(atPath: old.path, isDirectory: &isFolder), isFolder.boolValue { return old }
+        return home.appendingPathComponent("Documents/Macintosh Transfer", isDirectory: true)
     }
 
     public var folder: URL { folderPath.map { URL(fileURLWithPath: $0, isDirectory: true) } ?? Self.defaultFolder }
 
     public var template: URL { templatePath.map { URL(fileURLWithPath: $0) } ?? PartitionTemplate.standard }
 
-    static let key = "MacMusicTransferUtility.preferences"
+    static let key = "MacintoshTransferUtility.preferences"
+    /// 1.0's key (M4): copied to the new one the first time, and left for 1.0.
+    static let oldKey = "MacMusicTransferUtility.preferences"
 
     public static func load(from defaults: UserDefaults = .standard) -> Preferences {
+        if defaults.data(forKey: key) == nil, let old = defaults.data(forKey: oldKey) {
+            defaults.set(old, forKey: key)
+        }
         guard let data = defaults.data(forKey: key),
               var p = try? JSONDecoder().decode(Preferences.self, from: data) else { return Preferences() }
         if BlueSCSI.check(id: p.scsiID) != nil { p.scsiID = BlueSCSI.defaultID }

@@ -1,7 +1,7 @@
 import CryptoKit
 import Foundation
 import Testing
-@testable import MacMusicTransferKit
+@testable import MacintoshTransferKit
 
 /// The packaging engine (§7; V4-V8).
 @Suite struct EngineTests {

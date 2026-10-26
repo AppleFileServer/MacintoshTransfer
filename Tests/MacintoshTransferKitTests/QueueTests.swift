@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import MacMusicTransferKit
+@testable import MacintoshTransferKit
 
 /// The queue: what each file is, its name on the Mac, duplicates (V1-V3).
 @Suite struct QueueTests {

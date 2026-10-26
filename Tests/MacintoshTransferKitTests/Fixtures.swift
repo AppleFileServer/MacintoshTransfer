@@ -1,5 +1,5 @@
 import Foundation
-@testable import MacMusicTransferKit
+@testable import MacintoshTransferKit
 
 /// A fresh folder per test, removed when the test ends, and MacMusic-style
 /// WAVs made byte by byte (mono, 22,050 Hz, unsigned 8-bit), so the tests

@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import MacMusicTransferKit
+@testable import MacintoshTransferKit
 
 /// The window's logic, in the engine so it can be tested (U9).
 @Suite struct WindowLogicTests {
@@ -35,7 +35,7 @@ import Testing
     @Test func preferences() throws {
         let defaults = try #require(UserDefaults(suiteName: "mtu-test-\(UUID().uuidString)"))
         #expect(Preferences.load(from: defaults) == Preferences())
-        #expect(Preferences().scsiID == 6 && Preferences().folder.path.hasSuffix("Music/MacMusic Transfer"))
+        #expect(Preferences().scsiID == 6)
         var p = Preferences()
         p.scsiID = 2
         p.folderPath = "/tmp/x"
@@ -45,5 +45,30 @@ import Testing
         p.scsiID = 9
         p.save(to: defaults)
         #expect(Preferences.load(from: defaults).scsiID == 6)
+    }
+
+    /// M4: 1.0's settings carried over once, and left for 1.0.
+    @Test func preferencesFromOneDotZero() throws {
+        let defaults = try #require(UserDefaults(suiteName: "mtu-test-\(UUID().uuidString)"))
+        defaults.set(Data(#"{"scsiID":4,"folderPath":"/tmp/old"}"#.utf8), forKey: Preferences.oldKey)
+        let p = Preferences.load(from: defaults)
+        #expect(p.scsiID == 4 && p.folderPath == "/tmp/old")
+        #expect(defaults.data(forKey: Preferences.key) != nil && defaults.data(forKey: Preferences.oldKey) != nil)
+        var q = p
+        q.scsiID = 3
+        q.save(to: defaults)
+        #expect(Preferences.load(from: defaults).scsiID == 3)
+        #expect(defaults.data(forKey: Preferences.oldKey) == Data(#"{"scsiID":4,"folderPath":"/tmp/old"}"#.utf8))
+    }
+
+    /// M5: ~/Documents/Macintosh Transfer, unless 1.0's folder is there.
+    @Test func defaultFolder() throws {
+        let home = FileManager.default.temporaryDirectory.appendingPathComponent("mtu-build-home-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: home) }
+        try FileManager.default.createDirectory(at: home, withIntermediateDirectories: true)
+        #expect(Preferences.defaultFolder(home: home).path.hasSuffix("Documents/Macintosh Transfer"))
+        try FileManager.default.createDirectory(at: home.appendingPathComponent("Music/MacMusic Transfer"),
+                                                withIntermediateDirectories: true)
+        #expect(Preferences.defaultFolder(home: home).path.hasSuffix("Music/MacMusic Transfer"))
     }
 }

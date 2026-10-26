@@ -1,7 +1,7 @@
 import CryptoKit
 import Foundation
 import Testing
-@testable import MacMusicTransferKit
+@testable import MacintoshTransferKit
 
 /// Stage 1, the proof: real images, made by hfsutils from the template,
 /// checked three ways (§8; Q5).

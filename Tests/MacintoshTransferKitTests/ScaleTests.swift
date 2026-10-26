@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import MacMusicTransferKit
+@testable import MacintoshTransferKit
 
 /// Larger disks and many files (Stage 4; L1).
 @Suite struct ScaleTests {

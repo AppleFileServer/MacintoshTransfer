@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import MacMusicTransferKit
+@testable import MacintoshTransferKit
 
 /// Failures mid-build (Stage 4; L2, L3): a plain error, no image left
 /// behind (not even a hidden part-made one), the sources untouched.

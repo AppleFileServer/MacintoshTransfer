@@ -3,15 +3,15 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleName</key>
-	<string>MacMusic Transfer Utility</string>
+	<string>Macintosh Transfer Utility</string>
 	<key>CFBundleDisplayName</key>
-	<string>MacMusic Transfer Utility</string>
+	<string>Macintosh Transfer Utility</string>
 	<key>CFBundleIdentifier</key>
 	<string>local.macmusic.transferutility</string>
 	<key>CFBundleIconFile</key>
 	<string>AppIcon</string>
 	<key>CFBundleExecutable</key>
-	<string>MacMusicTransfer</string>
+	<string>MacintoshTransfer</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

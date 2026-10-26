@@ -1,5 +1,5 @@
 import AppKit
-import MacMusicTransferKit
+import MacintoshTransferKit
 
 /// Quitting safely (Stage 6; H2): closing the window quits the app;
 /// during a job, either asks "Stop building the disk and quit?" first; and

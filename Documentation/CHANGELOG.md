@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.0 (in development)
+
+- T1, the rename (SPECIFICATION.md §15.9, M2-M8): the app is now the
+  Macintosh Transfer Utility (window "Macintosh Transfer"; package and
+  modules `MacintoshTransfer`, `MacintoshTransferKit`; releases
+  `Macintosh-Transfer-Utility-<version>`); the version 2.0. The bundle
+  identifier is kept, and 1.0's settings carried over to a new key. Saved
+  by default to `~/Documents/Macintosh Transfer`, or 1.0's
+  `~/Music/MacMusic Transfer` if it exists. Images and their layout
+  unchanged.
+
 ## 1.0 (2026-10-26)
 
 - Checked on the real Plus (2026-10-26): the test set's names, and songs
