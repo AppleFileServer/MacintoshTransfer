@@ -94,3 +94,11 @@ Finder on this Mac. Nothing else on the card is affected either way.
   playing them in MacMusic (steps 6-7) wasn't reported separately; the
   same WAVs were imported and played in MacMusic earlier (the Converter's
   Stage 1, Mini vMac).
+- **1.0's check (2026-10-26)**, on the same Plus: (1) Stage 4's test set
+  (`~/MacPlusProjects/transfer-work/plus-test-set/out/HD60_512
+  Transfer.hda`): the names fine (Café, the shortened long name,
+  `Rock- Live.wav`, `clash 2.wav`); songs imported into MacMusic and
+  played. (2) An image made by the release candidate's app (from
+  8955326), unzipped outside the repository: mounted; a song imported
+  and played. The owner: "names fine, songs imported and played";
+  both images checked. **Passed** (steps 1-7).

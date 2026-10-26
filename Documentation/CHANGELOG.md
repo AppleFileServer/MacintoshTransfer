@@ -1,6 +1,9 @@
 # Changelog
 
-## 1.0 (candidate)
+## 1.0 (2026-10-26)
+
+- Checked on the real Plus (2026-10-26): the test set's names, and songs
+  imported into MacMusic and played, from it and from this release.
 
 - From the owner's screenshots (2026-10-10): sizes shown as the Finder
   shows them (decimal megabytes: "46.1 MB"), everywhere; the disk's size

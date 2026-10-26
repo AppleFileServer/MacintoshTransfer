@@ -718,3 +718,9 @@ MacMusic's environment archive).
 screenshots:** sizes shown the Finder's way (decimal megabytes), the
 file list's columns tightened, and free space read correctly on
 non-APFS disks. The 1.0 candidate remade; the Plus check still to do.
+
+**The Plus check (2026-10-26): passed.** Both images above, on the owner's
+Plus: "names fine, songs imported and played" (TESTING.md). 1.0 is
+final: the release notes' PLUS-CHECK line replaced, the release remade,
+tagged `v1.0`. 5c (R8, MacMusic's environment archive) is left to a
+MacMusic session (the owner, 2026-10-26).

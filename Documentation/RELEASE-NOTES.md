@@ -40,11 +40,12 @@ characters, no colons, and no two names alike ignoring case (a second
 ## Checked
 
 On the owner's Macintosh Plus, System 6.0.7, BlueSCSI: an image made
-this way mounts, with its WAV files there (2026-10-09). PLUS-CHECK: the
-names (Café, a long name, a colon, a case clash) and importing and
-playing in MacMusic, from the test set and from this release, are to be
-recorded here before 1.0 is tagged. Nothing else has been tried; other
-Macs, systems and SCSI emulators may well work but aren't claimed.
+this way mounts, with its WAV files there (2026-10-09); and (2026-10-26)
+a test set's names came through as shown when it was built (Café, a
+shortened long name, a colon, a case clash), and songs from it and from
+an image made by this release imported into MacMusic and played.
+Nothing else has been tried; other Macs, systems and SCSI emulators may
+well work but aren't claimed.
 
 ## Safe with your files
 
