@@ -10,6 +10,15 @@
   by default to `~/Documents/Macintosh Transfer`, or 1.0's
   `~/Music/MacMusic Transfer` if it exists. Images and their layout
   unchanged.
+- T2, kinds of file (SPECIFICATION.md §15.10, K1-K12): the engine now
+  works by kind of file (its folder, type, creator, name rule, validator),
+  with the MacMusic WAV the only kind so far. A file is recognised by its
+  content: a WAV named `.dat`, or with no extension, goes on as `….wav`;
+  a file of no known kind is refused with its reason. A folder adds the
+  files in it that are a known kind, or named as one. The checks also
+  cover each file's creator, and that the volume holds only the folders
+  used. A WAV-only image is still 1.0's, byte for byte apart from its
+  dates (a test against an image 1.0 made).
 
 ## 1.0 (2026-10-26)
 

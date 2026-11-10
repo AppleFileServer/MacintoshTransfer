@@ -9,7 +9,8 @@ by the MacMusic Converter Utility), in a "WAV Files" folder. Coming in
 **Status:** 1.0 released as the **MacMusic Transfer Utility** (tag
 `v1.0`, checked on the real Plus, 2026-10-26). **2.0 in development**
 as the Macintosh Transfer Utility (`Documentation/SPECIFICATION.md`
-§15.9): stage T1, the rename, done; WAVs only so far.
+§15.9-15.10): T1, the rename, and T2, kinds of file, done; WAVs only
+so far (MacPaint and PICTs come in T3).
 
     tools/build-app.sh && open "build/Macintosh Transfer Utility.app"
 

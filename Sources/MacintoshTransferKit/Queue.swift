@@ -1,13 +1,16 @@
 import CryptoKit
 import Foundation
 
-/// A WAV in the queue: what it is, read from the file itself (§4; V1), and
-/// its name on the Mac (§5; V2).
+/// A file in the queue: its kind and what it holds, read from the file
+/// itself (§4; V1, M9), and its name on the Mac (§5; V2).
 public struct QueuedFile: Sendable, Identifiable {
     public var id: URL { source }
     public let source: URL
     public let size: Int
-    public let report: MacMusicWAVReport
+    /// Its kind, by its content (K2); nil for a file of no known kind.
+    public let kind: FileKind?
+    /// What its kind's validator found; nil with no kind.
+    public let details: FileDetails?
     /// SHA-256 of the whole file, for spotting identical files (V3) and for
     /// checking the copy.
     public let sha256: String
@@ -17,23 +20,27 @@ public struct QueuedFile: Sendable, Identifiable {
 
     /// Why it can't go on the image, or nil.
     public var problem: String? {
-        if report.problems.contains("This is not a WAV file.") {
-            return "It isn't a WAV file."
+        guard let details else {
+            if let hint = FileKind.hinted(by: source) {
+                return "It isn't a \(hint.noun), though its name ends in .\(source.pathExtension)."
+            }
+            return "It isn't a kind of file that can go on the disk (\(FileKind.listing))."
         }
-        guard report.accepted else {
-            return "It isn't in MacMusic's format: " + report.problems.joined(separator: " ")
-                + " Convert it with the MacMusic Converter Utility first."
-        }
-        return nil
+        return details.problem
     }
+
+    /// The folder it goes in on the volume, if it can go.
+    public var folder: String? { problem == nil ? kind?.folder : nil }
+
+    /// How long it plays, for a kind that plays.
+    public var duration: Double? { details?.duration }
 
     /// The name was changed to suit the Mac.
     public var renamed: Bool { !macName.isEmpty && macName != source.lastPathComponent }
 
     /// What the file is, in a few words: "WAV PCM, 22,050 Hz, mono, 8-bit, 3:38".
     public var description: String {
-        let r = report
-        guard r.formatTag != 0 else { return "not a WAV file" }
+        guard case .wav(let r) = details else { return "not a kind of file that can go on the disk" }
         let format = r.formatTag == 1 ? "PCM" : String(format: "format 0x%04X", r.formatTag)
         let channels = r.channels == 1 ? "mono" : r.channels == 2 ? "stereo" : "\(r.channels) channels"
         let s = Int(r.duration.rounded())
@@ -44,12 +51,17 @@ public struct QueuedFile: Sendable, Identifiable {
     public static func inspect(_ url: URL) -> QueuedFile {
         let data = (try? Data(contentsOf: url)) ?? Data()
         let sha = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
-        return QueuedFile(source: url, size: data.count, report: MacMusicWAVValidator.check(url),
+        let kind = FileKind.recognise(data.prefix(FileKind.headBytes))
+        let details: FileDetails? = switch kind {
+        case .wav: .wav(MacMusicWAVValidator.check(url))
+        case nil: nil
+        }
+        return QueuedFile(source: url, size: data.count, kind: kind, details: details,
                           sha256: sha, macName: url.lastPathComponent)
     }
 }
 
-/// The queue of WAVs for one image.
+/// The queue of files for one image.
 public struct Queue: Sendable {
     public private(set) var files: [QueuedFile] = []
     /// Notes from the last change: duplicates ignored, identical files (V3).
@@ -58,8 +70,10 @@ public struct Queue: Sendable {
     public init() {}
 
     /// Adds files: the same file twice is ignored (V3); a folder adds the
-    /// .wav files directly inside it, not from folders within it (U5, the
-    /// owner's choice); missing files are noted. Names are then (re)assigned.
+    /// files directly inside it that are a known kind by their content, or
+    /// named as one (so a damaged one is still shown with its reason), not
+    /// from folders within it (U5, the owner's choice; K3); missing files
+    /// are noted. Names are then (re)assigned.
     public mutating func add(_ urls: [URL]) {
         notes = []
         var expanded: [URL] = []
@@ -69,16 +83,18 @@ public struct Queue: Sendable {
             if FileManager.default.fileExists(atPath: real.path, isDirectory: &isFolder), isFolder.boolValue {
                 let items = (try? FileManager.default.contentsOfDirectory(
                     at: real, includingPropertiesForKeys: [.isDirectoryKey], options: [.skipsHiddenFiles])) ?? []
-                let wavs = items.filter { $0.pathExtension.lowercased() == "wav"
-                    && (try? $0.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) != true }
-                    .sorted { $0.lastPathComponent.localizedStandardCompare($1.lastPathComponent) == .orderedAscending }
-                let others = items.count - wavs.count
-                if wavs.isEmpty {
-                    notes.append("\"\(url.lastPathComponent)\" has no WAV files directly inside it.")
-                } else if others > 0 {
-                    notes.append("From \"\(url.lastPathComponent)\": \(wavs.count) WAV file(s) added; \(others) other item(s) (including any folders) left out.")
+                let taken = items.filter {
+                    (try? $0.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) != true
+                        && (FileKind.hinted(by: $0) != nil || FileKind.recognise($0) != nil)
                 }
-                expanded += wavs
+                .sorted { $0.lastPathComponent.localizedStandardCompare($1.lastPathComponent) == .orderedAscending }
+                let others = items.count - taken.count
+                if taken.isEmpty {
+                    notes.append("\"\(url.lastPathComponent)\" has no \(FileKind.listing) directly inside it.")
+                } else if others > 0 {
+                    notes.append("From \"\(url.lastPathComponent)\": \(taken.count) file(s) added; \(others) other item(s) (including any folders) left out.")
+                }
+                expanded += taken
             } else {
                 expanded.append(url)
             }
@@ -113,23 +129,24 @@ public struct Queue: Sendable {
         notes = []
     }
 
-    /// Every file's name on the Mac (V2): MacNames' rules, then clashes (as
-    /// HFS sees them, ignoring case) made unique, "Song 2.wav", in list order.
-    /// Files that can't go on the disk get no name, and take none.
+    /// Every file's name on the Mac (V2): MacNames' rules with its kind's
+    /// extension, then clashes (as HFS sees them, ignoring case, and only
+    /// within a folder, M9) made unique, "Song 2.wav", in list order. Files
+    /// that can't go on the disk get no name, and take none.
     mutating func assignNames() {
-        var taken = Set<String>()
+        var taken: [String: Set<String>] = [:]
         for i in files.indices {
-            guard files[i].problem == nil else {
+            guard files[i].problem == nil, let kind = files[i].kind else {
                 files[i].macName = ""
                 continue
             }
             let base = (files[i].source.lastPathComponent as NSString).deletingPathExtension
-            var n = 1, name = MacNames.name(base)
-            while taken.contains(MacNames.key(name)) {
+            var n = 1, name = MacNames.name(base, extension: kind.macExtension)
+            while taken[kind.folder, default: []].contains(MacNames.key(name)) {
                 n += 1
-                name = MacNames.name(base, suffix: " \(n)")
+                name = MacNames.name(base, suffix: " \(n)", extension: kind.macExtension)
             }
-            taken.insert(MacNames.key(name))
+            taken[kind.folder, default: []].insert(MacNames.key(name))
             files[i].macName = name
         }
     }
@@ -139,14 +156,18 @@ public struct Queue: Sendable {
     public var totalBytes: Int { files.reduce(0) { $0 + $1.size } }
     /// What the files that can go on the disk add up to (for the estimate).
     public var readyBytes: Int { ready.reduce(0) { $0 + $1.size } }
-    public var totalSeconds: Double { files.reduce(0) { $0 + $1.report.duration } }
+    public var totalSeconds: Double { files.reduce(0) { $0 + ($1.duration ?? 0) } }
+    /// Whether any file plays (so a total length means something).
+    public var hasDurations: Bool { files.contains { $0.duration != nil } }
+    /// The folders the image will hold, in their order (M11).
+    public var folders: [String] { FileKind.present(ready.compactMap(\.kind)).map(\.folder) }
     public var canBuild: Bool { !files.isEmpty && refused.isEmpty }
 }
 
 /// Names on the classic Mac (§5; Q8, V2), as the MacMusic Converter Utility
 /// makes them (its OutputNaming): Mac Roman, letters it can't hold
 /// transliterated; no colons, slashes or control characters; not hidden;
-/// at most 31 characters with ".wav", cut at a word.
+/// at most 31 characters with the kind's extension (".wav"), cut at a word.
 public enum MacNames {
     public static let maximum = 31
 
@@ -166,8 +187,8 @@ public enum MacNames {
     }
 
     /// "<base><suffix>.wav", within 31 characters.
-    public static func name(_ base: String, suffix: String = "") -> String {
-        let room = maximum - ".wav".count - suffix.count
+    public static func name(_ base: String, suffix: String = "", extension ext: String = FileKind.wav.macExtension) -> String {
+        let room = maximum - ext.count - suffix.count
         var name = safe(base)
         if name.count > room {
             let cut = String(name.prefix(room))
@@ -178,7 +199,7 @@ public enum MacNames {
             }
             name = name.trimmingCharacters(in: CharacterSet(charactersIn: " ,;-_"))
         }
-        return name + suffix + ".wav"
+        return name + suffix + ext
     }
 
     /// How HFS compares names: ignoring case.

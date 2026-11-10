@@ -52,7 +52,7 @@ final class AppModel {
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = true
         panel.canChooseDirectories = true
-        panel.allowedContentTypes = [.wav, .folder]
+        panel.allowedContentTypes = FileKind.allCases.map(\.contentType) + [.folder]
         panel.message = "Choose WAV files, or a folder of them (its WAVs, not those in folders within)."
         panel.prompt = "Add"
         if panel.runModal() == .OK { add(panel.urls) }

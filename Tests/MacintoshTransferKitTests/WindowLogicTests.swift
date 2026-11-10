@@ -20,7 +20,7 @@ import Testing
         var q = Queue()
         q.add([album])
         #expect(q.files.map(\.source.lastPathComponent) == ["a.wav", "B.wav", "C.WAV"])
-        #expect(q.notes.first?.contains("3 WAV file(s) added; 2 other item(s)") == true)
+        #expect(q.notes.first?.contains("3 file(s) added; 2 other item(s)") == true)
         var empty = Queue()
         empty.add([inner.deletingLastPathComponent().appendingPathComponent("Bonus").deletingLastPathComponent()
                    .appendingPathComponent("Bonus")])
@@ -29,7 +29,23 @@ import Testing
         try FileManager.default.createDirectory(at: none, withIntermediateDirectories: true)
         var q2 = Queue()
         q2.add([none])
-        #expect(q2.files.isEmpty && q2.notes.first?.contains("no WAV files") == true)
+        #expect(q2.files.isEmpty && q2.notes.first?.contains("has no MacMusic WAVs directly inside") == true)
+    }
+
+    /// From a folder: the files of a known kind by content, or named as one
+    /// (a damaged one shown with its reason); nothing else (K3).
+    @Test func aFolderTakesFilesByKind() throws {
+        let album = f.url("Album")
+        try FileManager.default.createDirectory(at: album, withIntermediateDirectories: true)
+        try Data(contentsOf: try f.wav("a.wav", seconds: 1)).write(to: album.appendingPathComponent("Renamed.dat"))
+        try Data("damaged".utf8).write(to: album.appendingPathComponent("Broken.wav"))
+        try Data("x".utf8).write(to: album.appendingPathComponent("cover.jpg"))
+        var q = Queue()
+        q.add([album])
+        #expect(q.files.map(\.source.lastPathComponent) == ["Broken.wav", "Renamed.dat"])
+        #expect(q.files[0].problem == "It isn't a WAV file, though its name ends in .wav.")
+        #expect(q.files[1].problem == nil && q.files[1].macName == "Renamed.wav")
+        #expect(q.notes == ["From \"Album\": 2 file(s) added; 1 other item(s) (including any folders) left out."])
     }
 
     @Test func preferences() throws {

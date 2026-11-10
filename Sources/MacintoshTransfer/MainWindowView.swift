@@ -68,7 +68,7 @@ struct MainWindowView: View {
                     }
                     TableColumn("Format") { f in Text(format(f)).foregroundStyle(.secondary).lineLimit(1) }
                         .width(min: 96, ideal: 128, max: 150)
-                    TableColumn("Length") { f in Text(length(f.report.duration)).monospacedDigit() }.width(54)
+                    TableColumn("Length") { f in Text(f.duration.map(length) ?? "").monospacedDigit() }.width(54)
                     TableColumn("Size") { f in Text(bytes(f.size)).monospacedDigit() }.width(64)
                     TableColumn("Status") { f in
                         if let p = f.problem {
@@ -102,7 +102,8 @@ struct MainWindowView: View {
 
     var totals: String {
         let q = model.queue
-        return "\(q.files.count) file\(q.files.count == 1 ? "" : "s") · \(length(q.totalSeconds)) · \(bytes(q.totalBytes))"
+        let playing = q.hasDurations ? " · \(length(q.totalSeconds))" : ""
+        return "\(q.files.count) file\(q.files.count == 1 ? "" : "s")\(playing) · \(bytes(q.totalBytes))"
     }
 
     // MARK: The disk
@@ -121,7 +122,7 @@ struct MainWindowView: View {
                     .font(.callout)
                     .foregroundStyle(model.prefs.scsiID == BlueSCSI.bootID && w.contains("boot") ? Color.orange : Color.secondary)
             }
-            LabeledContent("Volume", value: "“\(Layout.volumeName)”, its files in the folder “\(Layout.folderName)”")
+            LabeledContent("Volume", value: "“\(Layout.volumeName)”, its files in \(folderWords)")
             LabeledContent("Size") {
                 Text(model.queue.ready.isEmpty ? "—" : "about \(sizeText(model.job.imageBytes))")
             }
@@ -237,9 +238,15 @@ struct MainWindowView: View {
 
     // MARK: Words
 
+    /// The folders the image will hold: those of the files ready, or, with
+    /// none yet, every kind's.
+    var folderWords: String {
+        let folders = model.queue.folders.isEmpty ? FileKind.allCases.map(\.folder) : model.queue.folders
+        return (folders.count == 1 ? "the folder " : "the folders ") + folders.map { "“\($0)”" }.joined(separator: ", ")
+    }
+
     func format(_ f: QueuedFile) -> String {
-        let r = f.report
-        guard r.formatTag != 0 else { return "not a WAV file" }
+        guard case .wav(let r) = f.details else { return "unknown kind" }
         let ch = r.channels == 1 ? "mono" : r.channels == 2 ? "stereo" : "\(r.channels) ch"
         // Compact, and still exact: "22.05 kHz mono 8-bit" (the owner's
         // screenshots: the full form left too little room for the names).

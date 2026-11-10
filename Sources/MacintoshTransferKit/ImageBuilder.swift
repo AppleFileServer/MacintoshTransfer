@@ -1,23 +1,34 @@
 import CryptoKit
 import Foundation
 
-/// A file to put on the image: where it is, and its name on the Mac.
+/// A file to put on the image: where it is, its kind (its folder, type
+/// and creator), and its name on the Mac.
 public struct ImageFile: Sendable, Equatable {
     public let source: URL
     public let macName: String
-    public init(source: URL, macName: String) {
+    public let kind: FileKind
+    public init(source: URL, macName: String, kind: FileKind) {
         self.source = source
         self.macName = macName
+        self.kind = kind
     }
 }
 
-/// The image's layout (§5; decisions Q2, Q10): an HFS volume "Transfer"
-/// holding a folder "WAV Files" with the WAVs.
+/// The image's layout (§5; decisions Q2, Q10, M11): an HFS volume
+/// "Transfer" holding a folder for each kind present ("WAV Files"), each
+/// with its files.
 public enum Layout {
     public static let volumeName = "Transfer"
-    public static let folderName = "WAV Files"
-    public static let fileType = "WAVE"
-    public static let fileCreator = "????"
+
+    /// The folders for these files, in their order.
+    public static func folders(_ files: [ImageFile]) -> [String] {
+        FileKind.present(files.map(\.kind)).map(\.folder)
+    }
+
+    /// "folder "WAV Files"", or "folders "WAV Files", "PICT Files"".
+    public static func describe(_ folders: [String]) -> String {
+        (folders.count == 1 ? "folder " : "folders ") + folders.map { "\"\($0)\"" }.joined(separator: ", ")
+    }
 }
 
 /// How big to make the image (Q6): the files plus 25%, plus 4 MB for HFS's
@@ -55,7 +66,7 @@ public struct ImageBuilder: Sendable {
 
     /// Writes the image to `output` (which must not exist yet): the
     /// template's 96 blocks sized for the disk, then the HFS partition,
-    /// formatted in place by hfsutils, with the folder and the files.
+    /// formatted in place by hfsutils, with the folders and the files.
     public func build(_ files: [ImageFile], imageBytes: Int, to output: URL,
                       progress: @escaping @Sendable (TransferProgress) -> Void = { _ in }) async throws {
         guard Sizing.fits(imageBytes) else { throw Problem.tooLarge(imageBytes) }
@@ -74,18 +85,20 @@ public struct ImageBuilder: Sendable {
             let free = try await freeBytes()
             let needed = try files.reduce(0) { $0 + (try Self.size($1.source)) }
             guard needed <= free else { throw Problem.doesNotFit(needed: needed, free: free) }
-            try await hfsutils.run("hmkdir", [.hfsPath(":" + Layout.folderName)])
+            for folder in Layout.folders(files) {
+                try await hfsutils.run("hmkdir", [.hfsPath(":" + folder)])
+            }
             for (i, f) in files.enumerated() {
                 try Task.checkCancellation()
                 progress(TransferProgress(stage: .copying, detail: "\(i + 1) of \(files.count): \(f.macName)",
                                           fraction: Double(i) / Double(max(files.count, 1))))
-                let to = HFSUtils.Argument.hfsPath(":\(Layout.folderName):\(f.macName)")
+                let to = HFSUtils.Argument.hfsPath(":\(f.kind.folder):\(f.macName)")
                 // -r: raw, the data fork only; "--" so no path is read as an option.
                 try await hfsutils.run("hcopy", [.option("-r"), .option("--"), .hostPath(f.source.path), to])
                 // hattrib takes no "--"; its argument is an HFS path, starting
                 // with ":", so it can't be read as an option.
-                try await hfsutils.run("hattrib", [.option("-t"), .option(Layout.fileType),
-                                                   .option("-c"), .option(Layout.fileCreator), to])
+                try await hfsutils.run("hattrib", [.option("-t"), .option(f.kind.fileType),
+                                                   .option("-c"), .option(f.kind.fileCreator), to])
             }
         } catch {
             _ = try? await hfsutils.run("humount", [])
@@ -109,9 +122,10 @@ public struct ImageBuilder: Sendable {
 }
 
 /// Checks a finished image without hfsutils (Q5): its partition map and
-/// driver are the template's, its volume and folder are named as they
-/// should be, and it holds exactly the files given, each the same size and
-/// SHA-256 as its source, with no resource fork.
+/// driver are the template's, its volume is named as it should be, its root
+/// holds exactly the folders the files' kinds need (M9), each holds exactly
+/// its files, and each file is the same size and SHA-256 as its source,
+/// with its kind's type and creator and no resource fork.
 public enum ImageVerifier {
     public struct Report: Sendable {
         public var problems: [String] = []
@@ -151,28 +165,36 @@ public enum ImageVerifier {
         reader.volumeName == Layout.volumeName ? ok("the volume is named \"\(Layout.volumeName)\"")
                                                : bad("the volume is named \"\(reader.volumeName)\"")
         let root = reader.contents(of: HFSReader.rootID)
-        guard let folder = root.first(where: { $0.isFolder && $0.name == Layout.folderName }) else {
-            bad("there's no \"\(Layout.folderName)\" folder")
-            return r
+        let folders = Layout.folders(files)
+        if root.allSatisfy(\.isFolder), root.map(\.name).sorted() == folders.sorted() {
+            ok("the volume holds only the \(Layout.describe(folders))")
+        } else {
+            bad("the volume holds \(root.map(\.name).sorted()), not the \(Layout.describe(folders))")
         }
-        root.count == 1 ? ok("the volume holds only the \"\(Layout.folderName)\" folder")
-                        : bad("the volume holds more than the folder: \(root.map(\.name))")
-        let inside = reader.contents(of: folder.id)
-        let expected = Set(files.map(\.macName))
-        let actual = Set(inside.map(\.name))
-        if expected == actual { ok("the folder holds exactly the \(files.count) files") }
-        else { bad("the folder holds \(actual.sorted()), not \(expected.sorted())") }
 
-        for f in files {
-            guard let e = inside.first(where: { $0.name == f.macName }) else { continue }
-            guard let data = try? Data(contentsOf: f.source) else { bad("\(f.source.path) can't be read"); continue }
-            let want = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
-            let got = (try? reader.sha256(of: e)) ?? "unreadable"
-            if e.dataLength == data.count, got == want, e.resourceLength == 0,
-               e.type == Layout.fileType {
-                ok("\"\(f.macName)\": \(data.count) bytes, SHA-256 matches, type \(e.type), no resource fork")
-            } else {
-                bad("\"\(f.macName)\": length \(e.dataLength) (source \(data.count)), SHA-256 \(got == want ? "matches" : "differs"), resource fork \(e.resourceLength), type \(e.type)")
+        for kind in FileKind.present(files.map(\.kind)) {
+            guard let folder = root.first(where: { $0.isFolder && $0.name == kind.folder }) else {
+                bad("there's no \"\(kind.folder)\" folder")
+                continue
+            }
+            let mine = files.filter { $0.kind == kind }
+            let inside = reader.contents(of: folder.id)
+            let expected = Set(mine.map(\.macName))
+            let actual = Set(inside.map(\.name))
+            if expected == actual { ok("\"\(kind.folder)\" holds exactly the \(mine.count) file\(mine.count == 1 ? "" : "s")") }
+            else { bad("\"\(kind.folder)\" holds \(actual.sorted()), not \(expected.sorted())") }
+
+            for f in mine {
+                guard let e = inside.first(where: { $0.name == f.macName }) else { continue }
+                guard let data = try? Data(contentsOf: f.source) else { bad("\(f.source.path) can't be read"); continue }
+                let want = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+                let got = (try? reader.sha256(of: e)) ?? "unreadable"
+                if e.dataLength == data.count, got == want, e.resourceLength == 0,
+                   e.type == kind.fileType, e.creator == kind.fileCreator {
+                    ok("\"\(f.macName)\": \(data.count) bytes, SHA-256 matches, type \(e.type), creator \(e.creator), no resource fork")
+                } else {
+                    bad("\"\(f.macName)\": length \(e.dataLength) (source \(data.count)), SHA-256 \(got == want ? "matches" : "differs"), resource fork \(e.resourceLength), type \(e.type), creator \(e.creator)")
+                }
             }
         }
         return r

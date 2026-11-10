@@ -807,3 +807,72 @@ is P25 (`~/MacPlusProjects/Programme/DECISIONS.md`).
 of file, WAV only (M9-M11); T3 MacPaint and both PICTs (M12-M13); T4
 the combined Plus test (M14) and release 2.0. (The plan's separate
 print-master stage went with `.mppi`, PH16.)
+
+## 15.10 T2, kinds of file, WAV only: decisions and findings (2026-10-27, approved by the owner)
+
+The plan for M9-M11, with WAV the only kind, so T3 adds MacPaint and
+the PICTs to an engine already built for them.
+
+- **K1, `FileKind`:** each kind's name, folder, type and creator, Mac
+  extension, the extensions that hint at it, its content check, its
+  validator's details (`FileDetails`), its words, and its type for the
+  Open panel. T2: `.wav` ("WAV Files", `WAVE`/`????`, `.wav`). T3 adds
+  `.macPaint`, `.screenPICT`, `.printPICT` in that order, which is the
+  folders' order on the volume (M11). `Layout` keeps the volume's name.
+- **K2, recognised by content (M9):** a file's kind is what its first
+  bytes say (a WAV: `RIFF….WAVE`), whatever it's called; its Mac name
+  is its name without its extension, plus the kind's (so 1.0's `.wav`
+  names are unchanged; `Song.dat` goes on as `Song.wav`). A file of no
+  known kind is refused: "It isn't a kind of file that can go on the
+  disk (MacMusic WAVs)."; named as a kind but not one: "It isn't a WAV
+  file, though its name ends in .wav." A WAV not in MacMusic's format is
+  refused as in 1.0.
+- **K3, a folder:** adds the files directly inside it that are a known
+  kind by content, or named as one (a damaged `.wav` is still shown with
+  its reason); the rest is counted in the note; not from folders within
+  (U5).
+- **K4, the queue:** each file carries its kind (nil if none) and its
+  details; names clash only within a folder.
+- **K5, the builder:** a folder only for each kind present, in K1's
+  order; each file with its kind's type and creator.
+- **K6, the verifier:** the root holds exactly the folders used; each
+  holds exactly its files; each file's size, SHA-256, no resource fork,
+  its kind's type and (new) creator.
+- **K7, the result:** each file's folder; the summary names the folders
+  (with only WAVs, as 1.0's: folder "WAV Files").
+- **K8, the window:** the Format column from each kind's details;
+  Length blank for a kind that doesn't play, and the total length only
+  when something plays; the "Volume" line names the folders to be made;
+  the Open panel's types from the kinds. The words stay WAV-only until
+  T3 (the drop text, "Add some WAV files first", the Converter advice).
+- **K9, sizing:** unchanged (Q6), every kind by its bytes.
+- **K10, the regression test (M10):** against a record made by 1.0's
+  own code (see the findings).
+- **K11, `mtu-build`:** prints each file's folder; its usage says
+  `<file> …`. The self-test is unchanged (T3 adds one of each kind).
+- **K12:** the tests and documents.
+
+**Findings (2026-10-27):**
+
+- **1.0's image, recorded:** `v1.0` was exported (`git archive`) to the
+  scratchpad, its `mtu-build` built, and five WAVs (made as the tests'
+  `Fixtures.wav` makes them) built into an image with it. Two such
+  builds, a few seconds apart, differ in 22 bytes, all dates: the
+  volume's created and modified dates in the Master Directory Block and
+  its copy at the volume's end; the catalog records' dates; and dates in
+  the free space of catalog nodes, where hfsutils leaves old copies of
+  records it moved when splitting a node. With those masked (zeroed),
+  the two builds are identical, and 2.0's build of the same files is
+  identical to them: `RegressionTests` holds the record (its size, its
+  first 96 blocks' SHA-256, every catalog entry, the masked image's
+  SHA-256). Only the record is in the repository; nothing of 1.0's
+  build or image.
+- The Open panel offers only files of the kinds' types (`.wav`); a WAV
+  under another name can be dropped on the window, or added from a
+  folder, but not chosen in the panel.
+- Names clashing only within a folder can't be tested until there's a
+  second folder (T3); with one folder it is 1.0's rule, and the existing
+  clash tests pass unchanged.
+- **Assumed, not verified:** a 2.0 WAV-only image is the same as 1.0's
+  apart from its dates, by the test above. It hasn't been tried on the
+  Plus yet (M14, in T4).

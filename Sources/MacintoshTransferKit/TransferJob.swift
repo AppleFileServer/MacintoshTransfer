@@ -37,6 +37,7 @@ public struct TransferResult: Sendable {
     public struct File: Sendable {
         public let source: URL
         public let macName: String
+        public let folder: String
         public let size: Int
         public let sha256: String
     }
@@ -48,13 +49,21 @@ public struct TransferResult: Sendable {
     public let checks: [String]
     public let warnings: [String]
 
+    /// The folders on the volume, in their order.
+    public var folders: [String] {
+        FileKind.allCases.map(\.folder).filter { folder in files.contains { $0.folder == folder } }
+    }
+
     /// The summary, as text to copy.
     public var summary: String {
         var lines = ["\(image.lastPathComponent): SCSI ID \(scsiID), \(sizeText(imageBytes)), "
-                     + "volume \"\(Layout.volumeName)\", folder \"\(Layout.folderName)\", \(files.count) file(s)."]
-        for f in files {
-            let from = f.source.lastPathComponent
-            lines.append("  \(from == f.macName ? from : "\(from) → \(f.macName)")  \(f.size) bytes  SHA-256 \(f.sha256)")
+                     + "volume \"\(Layout.volumeName)\", \(Layout.describe(folders)), \(files.count) file(s)."]
+        for folder in folders {
+            if folders.count > 1 { lines.append("  \(folder):") }
+            for f in files where f.folder == folder {
+                let from = f.source.lastPathComponent
+                lines.append("  \(from == f.macName ? from : "\(from) → \(f.macName)")  \(f.size) bytes  SHA-256 \(f.sha256)")
+            }
         }
         lines.append("Checked:")
         lines += checks.map { "  ✓ \($0)" }
@@ -209,7 +218,7 @@ public struct TransferEngine: Sendable {
         // place only once verified (§7).
         let temporary = job.folder.appendingPathComponent(".mtu-\(UUID().uuidString).hda.partial")
         defer { try? files.removeItem(at: temporary) }
-        let images = job.files.map { ImageFile(source: $0.source, macName: $0.macName) }
+        let images = job.files.compactMap { f in f.kind.map { ImageFile(source: f.source, macName: f.macName, kind: $0) } }
         do {
             try await ImageBuilder(template: template, hfsutils: hfs).build(
                 images, imageBytes: job.imageBytes, to: temporary) { step in progress(step) }
@@ -242,7 +251,8 @@ public struct TransferEngine: Sendable {
         }
         return TransferResult(
             image: destination, imageBytes: job.imageBytes, freeBytes: free, scsiID: job.scsiID,
-            files: job.files.map { .init(source: $0.source, macName: $0.macName, size: $0.size, sha256: $0.sha256) },
+            files: job.files.map { .init(source: $0.source, macName: $0.macName, folder: $0.folder ?? "",
+                                         size: $0.size, sha256: $0.sha256) },
             checks: report.checks, warnings: warnings)
     }
 }

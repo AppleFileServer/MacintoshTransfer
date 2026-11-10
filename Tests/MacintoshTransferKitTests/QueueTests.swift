@@ -32,8 +32,41 @@ import Testing
         let cd = q.files.first { $0.source.lastPathComponent == "cd.wav" }!
         #expect(cd.description == "WAV PCM, 44,100 Hz, stereo, 16-bit, 0:01")
         #expect(cd.problem?.contains("MacMusic Converter Utility") == true)
-        #expect(q.files.first { $0.source.lastPathComponent == "notes.wav" }!.problem == "It isn't a WAV file.")
+        #expect(q.files.first { $0.source.lastPathComponent == "notes.wav" }!.problem == "It isn't a WAV file, though its name ends in .wav.")
         #expect(q.files.first { $0.source.lastPathComponent == "cut.wav" }!.problem?.contains("past the end") == true)
+    }
+
+    /// A file's kind is its content's; its extension only a hint (M9, K2).
+    @Test func kindsByContent() throws {
+        let dat = f.url("Song.dat"), bare = f.url("Tune"), text = f.url("notes.txt")
+        try Data(contentsOf: try f.wav("x1.wav", seconds: 1, seed: 1)).write(to: dat)
+        try Data(contentsOf: try f.wav("x2.wav", seconds: 1, seed: 2)).write(to: bare)
+        try Data("not audio at all".utf8).write(to: text)
+        var q = Queue()
+        q.add([dat, bare, text])
+        #expect(q.files.map(\.kind) == [.wav, .wav, nil])
+        #expect(q.files.map(\.macName) == ["Song.wav", "Tune.wav", ""])
+        #expect(q.files.map(\.folder) == ["WAV Files", "WAV Files", nil])
+        #expect(q.files[2].problem == "It isn't a kind of file that can go on the disk (MacMusic WAVs).")
+        #expect(q.files[2].duration == nil && !q.files[2].description.isEmpty)
+        #expect(q.folders == ["WAV Files"] && q.hasDurations)
+        q.remove([q.files[0].source, q.files[1].source])
+        #expect(q.folders.isEmpty && !q.hasDurations)
+    }
+
+    @Test func kinds() {
+        #expect(FileKind.allCases == [.wav])
+        let wav = FileKind.wav
+        #expect(wav.folder == "WAV Files" && wav.fileType == "WAVE" && wav.fileCreator == "????")
+        #expect(wav.macExtension == ".wav" && FileKind.listing == "MacMusic WAVs")
+        #expect(FileKind.hinted(by: URL(fileURLWithPath: "/x/A.WAV")) == .wav)
+        #expect(FileKind.hinted(by: URL(fileURLWithPath: "/x/A.aif")) == nil)
+        #expect(FileKind.recognise(Data("RIFF\0\0\0\0WAVE".utf8)) == .wav)
+        #expect(FileKind.recognise(Data("RIFF\0\0\0\0AVI ".utf8)) == nil)
+        #expect(FileKind.recognise(Data("RIFF".utf8)) == nil)
+        #expect(FileKind.present([.wav, .wav]) == [.wav] && FileKind.present([]) == [])
+        #expect(Layout.describe(["WAV Files"]) == "folder \"WAV Files\"")
+        #expect(Layout.describe(["WAV Files", "PICT Files"]) == "folders \"WAV Files\", \"PICT Files\"")
     }
 
     @Test func macNames() {

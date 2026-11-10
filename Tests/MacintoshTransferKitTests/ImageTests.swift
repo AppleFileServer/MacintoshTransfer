@@ -18,9 +18,9 @@ import Testing
     }
 
     func threeSongs() throws -> [ImageFile] {
-        [ImageFile(source: try f.wav("one.wav", seconds: 2, seed: 1), macName: "Song One.wav"),
-         ImageFile(source: try f.wav("two.wav", seconds: 3.3, seed: 2), macName: "Good Luck, Babe!.wav"),
-         ImageFile(source: try f.wav("three.wav", seconds: 0.5, seed: 3), macName: "Café Song.wav")]
+        [ImageFile(source: try f.wav("one.wav", seconds: 2, seed: 1), macName: "Song One.wav", kind: .wav),
+         ImageFile(source: try f.wav("two.wav", seconds: 3.3, seed: 2), macName: "Good Luck, Babe!.wav", kind: .wav),
+         ImageFile(source: try f.wav("three.wav", seconds: 0.5, seed: 3), macName: "Café Song.wav", kind: .wav)]
     }
 
     @Test func buildsAndVerifies() async throws {
@@ -89,11 +89,26 @@ import Testing
         #expect(damaged.problems.contains { $0.contains("Song One.wav") && $0.contains("differs") })
 
         let fewer = ImageVerifier.verify(image, files: Array(files.dropLast()), template: try f.template())
-        #expect(fewer.problems.contains { $0.contains("the folder holds") })
+        #expect(fewer.problems.contains { $0.contains("\"WAV Files\" holds") })
+    }
+
+    /// The verifier notices a wrong creator and a folder it didn't expect (M9).
+    @Test func verifierChecksCreatorsAndFolders() async throws {
+        let files = try threeSongs()
+        let image = try await make(files)
+        let hfs = try f.hfsutils()
+        try await hfs.run("hmount", [.hostPath(image.path), .option("1")])
+        try await hfs.run("hattrib", [.option("-c"), .option("ttxt"), .hfsPath(":WAV Files:Song One.wav")])
+        try await hfs.run("hmkdir", [.hfsPath(":Extra")])
+        try await hfs.run("humount", [])
+        let r = ImageVerifier.verify(image, files: files, template: try f.template())
+        #expect(r.problems.contains { $0.contains("Song One.wav") && $0.contains("creator ttxt") })
+        #expect(r.problems.contains { $0.contains("[\"Extra\", \"WAV Files\"]") })
+        #expect(r.checks.contains { $0.contains("Café Song.wav") && $0.contains("creator ????") })
     }
 
     @Test func tooSmallIsRefusedBeforeCopying() async throws {
-        let big = ImageFile(source: try f.wav("big.wav", seconds: 600), macName: "Big.wav")   // 13 MB
+        let big = ImageFile(source: try f.wav("big.wav", seconds: 600), macName: "Big.wav", kind: .wav)   // 13 MB
         await #expect(throws: ImageBuilder.Problem.self) { try await make([big], bytes: 10 * 1_048_576) }
     }
 

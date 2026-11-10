@@ -1,11 +1,12 @@
 import Foundation
 import MacintoshTransferKit
 
-// mtu-build: builds a Transfer image from WAV files with the engine (a
-// developer's tool until the app does it). Names are made to suit the Mac;
-// an existing image is kept, the new one named "... Transfer 2.hda".
+// mtu-build: builds a Transfer image from files with the engine (a
+// developer's tool until the app does it). Each file's kind is read from
+// its content; names are made to suit the Mac; an existing image is kept,
+// the new one named "... Transfer 2.hda".
 //
-//   mtu-build [--id N] [--replace] <output folder> <file.wav> ...
+//   mtu-build [--id N] [--replace] <output folder> <file> ...
 
 var args = Array(CommandLine.arguments.dropFirst())
 var id = BlueSCSI.defaultID
@@ -16,7 +17,7 @@ if let i = args.firstIndex(of: "--id"), i + 1 < args.count, let n = Int(args[i +
 }
 if let i = args.firstIndex(of: "--replace") { existing = .replace; args.remove(at: i) }
 guard args.count >= 2 else {
-    FileHandle.standardError.write(Data("usage: mtu-build [--id N] [--replace] <output folder> <file.wav> ...\n".utf8))
+    FileHandle.standardError.write(Data("usage: mtu-build [--id N] [--replace] <output folder> <file> ...\n".utf8))
     exit(2)
 }
 
@@ -25,7 +26,8 @@ queue.add(args.dropFirst().map { URL(fileURLWithPath: $0) })
 for n in queue.notes { print("note  \(n)") }
 for f in queue.files {
     let to = f.renamed ? "  → \(f.macName)" : ""            // refused files have no Mac name
-    print("\(f.problem == nil ? "ok  " : "NO  ")  \(f.source.lastPathComponent)\(to): \(f.description)")
+    let kind = f.kind.map { " [\($0.folder)]" } ?? ""
+    print("\(f.problem == nil ? "ok  " : "NO  ")  \(f.source.lastPathComponent)\(to)\(kind): \(f.description)")
     if let p = f.problem { print("      \(p)") }
 }
 let job = TransferJob(queue: queue, folder: URL(fileURLWithPath: args[0]), scsiID: id, existing: existing)
