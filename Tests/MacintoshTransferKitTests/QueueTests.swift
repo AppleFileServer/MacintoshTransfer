@@ -12,7 +12,7 @@ import Testing
         q.add([try f.wav("song.wav", seconds: 3)])
         let x = try #require(q.files.first)
         #expect(x.problem == nil && q.canBuild)
-        #expect(x.description == "WAV PCM, 22,050 Hz, mono, 8-bit, 0:03")
+        #expect(x.description == "WAV PCM, 22,254 Hz, mono, 8-bit, 0:03")
         #expect(x.macName == "song.wav" && !x.renamed)
     }
 
@@ -34,6 +34,23 @@ import Testing
         #expect(cd.problem?.contains("MacMusic Converter Utility") == true)
         #expect(q.files.first { $0.source.lastPathComponent == "notes.wav" }!.problem == "It isn't a WAV file, though its name ends in .wav.")
         #expect(q.files.first { $0.source.lastPathComponent == "cut.wav" }!.problem?.contains("past the end") == true)
+    }
+
+    /// Only the Converter 1.1's rate, the Plus's own: 22,254 Hz, its byte
+    /// rate the same (W1, W2). Songs made at 22,050 Hz need converting again.
+    @Test func theRate() throws {
+        var q = Queue()
+        q.add([try f.wav("new.wav", seconds: 2.5),
+               try f.wav("old.wav", seconds: 1, rate: 22_050),
+               try f.anyWAV("near.wav", rate: 22_255),
+               try f.anyWAV("odd.wav", byteRate: 22_050)])
+        let x = q.files.map(\.problem)
+        #expect(x[0] == nil && q.files[0].duration == 2.5)
+        #expect(x[1]?.contains("Its sample rate is 22050 Hz, not 22254.") == true)
+        #expect(x[1]?.contains("MacMusic Converter Utility") == true)
+        #expect(x[2]?.contains("Its sample rate is 22255 Hz, not 22254.") == true)
+        #expect(x[3]?.contains("inconsistent (block align 1, byte rate 22050)") == true)
+        #expect(q.refused.count == 3)
     }
 
     /// A file's kind is its content's; its extension only a hint (M9, K2).

@@ -495,6 +495,8 @@ MacMusic Converter Utility's SPECIFICATION.md §18.2): RIFF/WAVE, format
 1 (plain PCM), 1 channel, 22,050 Hz, 8 bits (unsigned), block align 1,
 byte rate 22,050, a non-empty data chunk; no `iPod` chunk (MacMusic adds
 it on import). An optional LIST/INFO title (INAM) is read on import.
+From 2.0 the rate is 22,254 Hz, byte rate 22,254, the Converter 1.1's
+(§15.11).
 
 **The tools here:** hfsutils 3.2.6, built by Retro68
 (`~/Retro68-build/toolchain/bin`: arm64, needing only libSystem; source
@@ -876,3 +878,40 @@ the PICTs to an engine already built for them.
 - **Assumed, not verified:** a 2.0 WAV-only image is the same as 1.0's
   apart from its dates, by the test above. It hasn't been tried on the
   Plus yet (M14, in T4).
+
+## 15.11 The Plus's own rate, 22,254 Hz: decisions and findings (2026-11-12, approved by the owner)
+
+The Converter 1.1 makes MacMusic WAVs at 22,254 Hz, the Plus's own
+rate (the hardware's 22,254.5, to the whole number a WAV holds): at
+22,050 Hz songs played 0.93% fast on the Plus (MacMusic's issue I4;
+the Converter's commit 5a3acc7, its SPECIFICATION §18.25). MacMusic 1.2
+(committed, not yet released) imports 22,050 or 22,254 Hz, its byte
+rate equal to its rate, and nothing else, not even 22,255 (`src/wav.c`,
+N12-4). The request came from the Converter session.
+
+- **W1, one rate (the owner's choice):** `MacMusicFormat`'s rate and
+  byte rate are 22,254, as the Converter's copy's are; not both rates,
+  though MacMusic 1.2 takes both. A 22,050 Hz song made before the
+  Converter 1.1 is refused, and needs converting again.
+- **W2, the check:** unchanged but for naming the rate from
+  `MacMusicFormat`: "Its sample rate is 22050 Hz, not 22254."; a byte
+  rate other than 22,254 is "inconsistent".
+- **W3, the length:** unchanged; it was already from the file's own
+  byte rate.
+- **W4, the window:** unchanged; the Format column ("22.254 kHz mono
+  8-bit") and the description ("22,254 Hz") are the file's own.
+- **W5, the regression test (M10):** 1.0 took only 22,050 Hz, 2.0 only
+  22,254, so no files pass both checks. The test's five WAVs stay at
+  22,050 Hz and go straight to the image builder (as the engine gives
+  them, with the names 1.0 gave them), and the image is verified; the
+  record is unchanged. It still shows the image's layout is 1.0's; the
+  queue's naming is tested in `QueueTests`.
+- **W6, the tests and self-test:** the fixtures and the self-test's tone
+  at 22,254 Hz; a new test: 22,254 accepted with its length; 22,050 and
+  22,255 refused, each with its rate; a byte rate of 22,050 refused as
+  inconsistent.
+
+**Findings (2026-11-12):** 49 tests and the record (skipped), all
+passing. `mtu-build` goes through the same queue, so it takes the same
+rate. **Assumed, not verified:** that MacMusic 1.2 on the Plus imports
+22,254 Hz songs from a Transfer disk; it needs the owner's test there.

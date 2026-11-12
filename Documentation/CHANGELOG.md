@@ -19,6 +19,10 @@
   cover each file's creator, and that the volume holds only the folders
   used. A WAV-only image is still 1.0's, byte for byte apart from its
   dates (a test against an image 1.0 made).
+- The Plus's own rate (SPECIFICATION.md §15.11, W1-W6): MacMusic WAVs are
+  now checked at 22,254 Hz, as the Converter 1.1 makes them, so songs
+  play at their true speed (they need MacMusic 1.2). Songs made at
+  22,050 Hz are refused, and need converting again.
 
 ## 1.0 (2026-10-26)
 

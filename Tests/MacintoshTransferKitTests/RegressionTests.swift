@@ -7,19 +7,41 @@ import Testing
 /// 2.0 give an image identical to the one 1.0 (`v1.0`, 0759ea0) built,
 /// byte for byte apart from the dates hformat and hcopy stamp. The record
 /// below was made by 1.0's own `mtu-build` (SPECIFICATION.md §15.10).
+///
+/// 1.0 took only 22,050 Hz WAVs and 2.0 only 22,254 Hz ones (W1, W5), so
+/// the files can't go through both apps' checks: they're given straight to
+/// the image builder, with the names 1.0 gave them, and the image verified.
 @Suite struct RegressionTests {
     let f: Fixtures
     init() throws { f = try Fixtures() }
 
-    /// The five WAVs, in the order they were given to 1.0: an identical
-    /// pair, an accented name with an odd-length audio chunk, and two long
-    /// names cut to the same name, so the second is made unique.
+    /// The five WAVs, in the order they were given to 1.0, at 1.0's rate: an
+    /// identical pair, an accented name with an odd-length audio chunk, and
+    /// two long names cut to the same name, so the second is made unique.
     func theFiles() throws -> [URL] {
-        [try f.wav("Song One.wav", seconds: 1, seed: 1),
-         try f.wav("Song One copy.wav", seconds: 1, seed: 1),
-         try f.wav("Café.wav", seconds: 0.5, seed: 2),
-         try f.wav("A very long name for a song that won't fit 1.wav", seconds: 1, seed: 3),
-         try f.wav("A very long name for a song that won't fit 2.wav", seconds: 1, seed: 4)]
+        [try f.wav("Song One.wav", seconds: 1, seed: 1, rate: 22_050),
+         try f.wav("Song One copy.wav", seconds: 1, seed: 1, rate: 22_050),
+         try f.wav("Café.wav", seconds: 0.5, seed: 2, rate: 22_050),
+         try f.wav("A very long name for a song that won't fit 1.wav", seconds: 1, seed: 3, rate: 22_050),
+         try f.wav("A very long name for a song that won't fit 2.wav", seconds: 1, seed: 4, rate: 22_050)]
+    }
+
+    /// The names 1.0 gave them (the queue's naming is tested in QueueTests).
+    static let macNames = ["Song One.wav", "Song One copy.wav", "Café.wav",
+                           "A very long name for a.wav", "A very long name for a 2.wav"]
+
+    /// The image of the five, built as the engine builds it, and verified.
+    func build(in folder: URL) async throws -> URL {
+        let sources = try theFiles()
+        let images = zip(sources, Self.macNames).map { ImageFile(source: $0, macName: $1, kind: .wav) }
+        let total = try sources.reduce(0) { $0 + (try Data(contentsOf: $1).count) }
+        let image = folder.appendingPathComponent(BlueSCSI.imageName(id: 6))
+        let template = try f.template()
+        try await ImageBuilder(template: template, hfsutils: try f.hfsutils())
+            .build(images, imageBytes: Sizing.imageBytes(forFiles: total), to: image)
+        let report = ImageVerifier.verify(image, files: images, template: template)
+        #expect(report.passed, "\(report.problems)")
+        return image
     }
 
     /// What 1.0 made of them.
@@ -38,11 +60,7 @@ import Testing
         ])
 
     @Test func aWAVOnlyImageIsStillOnePointZeros() async throws {
-        let files = try theFiles()
-        var q = Queue()
-        q.add(files)
-        let r = try await TransferEngine().run(TransferJob(queue: q, folder: f.folder))
-        let print = try Print.of(r.image)
+        let print = try Print.of(try await build(in: f.folder))
         #expect(print.entries == Self.v1.entries)
         #expect(print.imageBytes == Self.v1.imageBytes)
         #expect(print.headerSHA256 == Self.v1.headerSHA256)
@@ -52,15 +70,13 @@ import Testing
     /// Two builds of the same files differ only in their dates, so the
     /// masking finds every date (or the comparison above couldn't hold).
     @Test func twoBuildsDifferOnlyInTheirDates() async throws {
-        var q = Queue()
-        q.add(try theFiles())
         let one = f.url("one"), two = f.url("two")
         for d in [one, two] { try FileManager.default.createDirectory(at: d, withIntermediateDirectories: true) }
-        let a = try await TransferEngine().run(TransferJob(queue: q, folder: one))
+        let a = try await build(in: one)
         try await Task.sleep(for: .seconds(1.1))                        // a different second
-        let b = try await TransferEngine().run(TransferJob(queue: q, folder: two))
-        #expect(try Data(contentsOf: a.image) != Data(contentsOf: b.image))
-        #expect(try Print.of(a.image) == Print.of(b.image))
+        let b = try await build(in: two)
+        #expect(try Data(contentsOf: a) != Data(contentsOf: b))
+        #expect(try Print.of(a) == Print.of(b))
     }
 
     /// For recording `v1` again: `MTU_V1_IMAGE=<1.0's image> tools/test.sh

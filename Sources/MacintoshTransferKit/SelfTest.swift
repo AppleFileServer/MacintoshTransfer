@@ -55,9 +55,9 @@ public enum SelfTest {
         return (true, report)
     }
 
-    /// A MacMusic WAV: mono, 22,050 Hz, 8-bit unsigned, a sine tone.
+    /// A MacMusic WAV: mono, 22,254 Hz, 8-bit unsigned, a sine tone.
     static func tone(seconds: Double, hertz: Double) -> Data {
-        let rate = 22_050, count = Int(Double(rate) * seconds)
+        let rate = Int(MacMusicFormat.sampleRate), count = Int(Double(rate) * seconds)
         var d = Data()
         func u32(_ v: Int) { withUnsafeBytes(of: UInt32(v).littleEndian) { d.append(contentsOf: $0) } }
         func u16(_ v: Int) { withUnsafeBytes(of: UInt16(v).littleEndian) { d.append(contentsOf: $0) } }

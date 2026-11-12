@@ -2,7 +2,7 @@ import Foundation
 @testable import MacintoshTransferKit
 
 /// A fresh folder per test, removed when the test ends, and MacMusic-style
-/// WAVs made byte by byte (mono, 22,050 Hz, unsigned 8-bit), so the tests
+/// WAVs made byte by byte (mono, 22,254 Hz, unsigned 8-bit), so the tests
 /// need no audio tools.
 final class Fixtures {
     let folder: URL
@@ -16,16 +16,17 @@ final class Fixtures {
 
     func url(_ name: String) -> URL { folder.appendingPathComponent(name) }
 
-    /// A MacMusic WAV of `seconds` of a tone (`seed` varies it).
+    /// A MacMusic WAV of `seconds` of a tone (`seed` varies it); `rate`
+    /// 22,050 for one made before the Converter 1.1.
     @discardableResult
-    func wav(_ name: String, seconds: Double, seed: Int = 1) throws -> URL {
-        let n = Int(seconds * 22_050)
+    func wav(_ name: String, seconds: Double, seed: Int = 1, rate: UInt32 = 22_254) throws -> URL {
+        let n = Int(seconds * Double(rate))
         var audio = Data(count: n)
         for i in 0..<n {
             audio[i] = UInt8(clamping: 128 + Int(60 * sin(Double(i * (seed + 3)) / 20)))
         }
         var fmt = Data()
-        fmt.le16(1); fmt.le16(1); fmt.le32(22_050); fmt.le32(22_050); fmt.le16(1); fmt.le16(8)
+        fmt.le16(1); fmt.le16(1); fmt.le32(rate); fmt.le32(rate); fmt.le16(1); fmt.le16(8)
         var body = Data("WAVE".utf8)
         body.append(Data("fmt ".utf8)); body.le32(UInt32(fmt.count)); body.append(fmt)
         body.append(Data("data".utf8)); body.le32(UInt32(audio.count)); body.append(audio)
@@ -39,12 +40,12 @@ final class Fixtures {
     /// A WAV of any shape: format tag, channels, rate, bits; `cut` drops
     /// that many bytes from the end (a truncated file).
     @discardableResult
-    func anyWAV(_ name: String, format: UInt16 = 1, channels: UInt16 = 1, rate: UInt32 = 22_050,
-                bits: UInt16 = 8, seconds: Double = 1, cut: Int = 0) throws -> URL {
+    func anyWAV(_ name: String, format: UInt16 = 1, channels: UInt16 = 1, rate: UInt32 = 22_254,
+                bits: UInt16 = 8, seconds: Double = 1, cut: Int = 0, byteRate: UInt32? = nil) throws -> URL {
         let blockAlign = channels * bits / 8
         let audio = Data(repeating: 128, count: Int(seconds * Double(rate)) * Int(blockAlign))
         var fmt = Data()
-        fmt.le16(format); fmt.le16(channels); fmt.le32(rate); fmt.le32(rate * UInt32(blockAlign))
+        fmt.le16(format); fmt.le16(channels); fmt.le32(rate); fmt.le32(byteRate ?? rate * UInt32(blockAlign))
         fmt.le16(blockAlign); fmt.le16(bits)
         var body = Data("WAVE".utf8)
         body.append(Data("fmt ".utf8)); body.le32(UInt32(fmt.count)); body.append(fmt)
